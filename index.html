@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tinttex — 高斯泼溅场景展示</title>
+  <meta name="description" content="Tinttex 以三维高斯泼溅（3D Gaussian Splatting）技术，将真实空间复现为可漫游、可分享的沉浸式数字场景。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230e0e0e'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='18' font-weight='700' fill='%23fff' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body id="top">
+
+  <!-- ======== 顶部导航 ======== -->
+  <header class="nav wrap">
+    <button class="nav-burger" id="menuToggle" aria-label="打开菜单" aria-expanded="false">
+      <span></span><span></span>
+    </button>
+    <a class="nav-logo" href="#top">Tinttex<sup>®</sup></a>
+    <a class="nav-contact" href="mailto:hello@tinttex.com">hello@tinttex.com</a>
+  </header>
+
+  <!-- ======== 全屏菜单 ======== -->
+  <nav class="menu" id="menu" aria-hidden="true">
+    <ul>
+      <li><a href="#top" data-menu-link>首页</a></li>
+      <li><a href="#about" data-menu-link>关于我们</a></li>
+      <li><a href="#projects" data-menu-link>精选场景</a></li>
+      <li><a href="#services" data-menu-link>服务</a></li>
+      <li><a href="#contact" data-menu-link>联系</a></li>
+    </ul>
+  </nav>
+
+  <!-- ======== Hero ======== -->
+  <section class="hero">
+    <video class="hero-video" src="loginVid.mp4" autoplay muted loop playsinline preload="auto"></video>
+    <div class="hero-shade" aria-hidden="true"></div>
+    <h1 class="hero-title" aria-label="Tinttex">TINTTEX</h1>
+    <p class="hero-copy">我们以三维高斯泼溅技术，把真实空间转化为可漫步其间的数字场景——每一束光线、每一件器物，都被完整留存。</p>
+    <a class="circle-btn hero-arrow" href="#about" aria-label="向下探索">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h17M15 6l6 6-6 6"/></svg>
+    </a>
+  </section>
+
+  <!-- ======== 关于我们 ======== -->
+  <section class="about wrap section" id="about">
+    <div class="section-grid">
+      <h2 class="section-title reveal">ABOUT&nbsp;US</h2>
+      <div class="about-body">
+        <p class="reveal">Tinttex 专注于三维高斯泼溅（3D&nbsp;Gaussian&nbsp;Splatting）的场景采集与实时呈现。我们相信，空间的价值不止于图纸与照片，而在于身处其中的体验。</p>
+        <p class="reveal">从居所到展馆，从街区到自然——我们将真实场景完整复现为可漫游、可分享、可嵌入的沉浸式数字资产，让每一次到访，都不受时间与距离的限制。</p>
+        <a class="link-more reveal" href="#projects">
+          <span>了解更多</span>
+          <span class="circle-btn circle-btn--sm" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h17M15 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== 数据 ======== -->
+  <section class="stats wrap">
+    <div class="stat reveal">
+      <div class="stat-num">12+</div>
+      <div class="stat-label">年三维视觉<br>与图形学积累</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num">26+</div>
+      <div class="stat-label">场景数字化<br>项目交付</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num">45+</div>
+      <div class="stat-label">高斯泼溅场景<br>上线运行</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num">115+</div>
+      <div class="stat-label">合作客户与<br>机构伙伴</div>
+    </div>
+  </section>
+
+  <!-- ======== 大幅视频 / Showreel ======== -->
+  <section class="showreel" id="showreel">
+    <video id="reelVideo" src="loginVid.mp4" muted loop playsinline preload="metadata"></video>
+    <button class="play-btn" id="reelToggle" aria-label="播放视频">
+      <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+      <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.6z"/></svg>
+    </button>
+  </section>
+
+  <!-- ======== 精选场景 ======== -->
+  <section class="projects wrap section" id="projects">
+    <div class="section-grid">
+      <h2 class="section-title reveal">COMPLETED<br>PROJECTS</h2>
+      <p class="section-note reveal">每一个场景，都以数亿级高斯泼溅点完整重建。下钻、环绕、推近——你看到的不是照片，而是可以走进的空间本身。</p>
+    </div>
+
+    <ul class="project-list">
+      <li class="project reveal">
+        <figure class="project-media">
+          <img src="assets/img/scene-01.jpg" alt="庭院平层实景扫描：现代客厅与内庭院" loading="lazy">
+        </figure>
+        <div class="project-info">
+          <h3>庭院平层 · 实景复刻</h3>
+          <p>现代宅邸全屋扫描 · 2.4 亿泼溅点还原</p>
+          <a class="link-more project-more" href="#contact">
+            <span>查看场景</span>
+            <span class="circle-btn circle-btn--sm" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h17M15 6l6 6-6 6"/></svg>
+            </span>
+          </a>
+        </div>
+      </li>
+      <li class="project reveal">
+        <figure class="project-media">
+          <img src="assets/img/scene-02.jpg" alt="林间大宅沉浸漫游：森林景观客厅" loading="lazy">
+        </figure>
+        <div class="project-info">
+          <h3>林间大宅 · 沉浸漫游</h3>
+          <p>森林景观住宅 · 8K 视口自由视角</p>
+          <a class="link-more project-more" href="#contact">
+            <span>查看场景</span>
+            <span class="circle-btn circle-btn--sm" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h17M15 6l6 6-6 6"/></svg>
+            </span>
+          </a>
+        </div>
+      </li>
+      <li class="project reveal">
+        <figure class="project-media">
+          <img src="assets/img/scene-03.jpg" alt="暖木公寓数字孪生：木质小宅起居空间" loading="lazy">
+        </figure>
+        <div class="project-info">
+          <h3>暖木公寓 · 数字孪生</h3>
+          <p>小户型全屋存档 · 网页端秒开漫游</p>
+          <a class="link-more project-more" href="#contact">
+            <span>查看场景</span>
+            <span class="circle-btn circle-btn--sm" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h17M15 6l6 6-6 6"/></svg>
+            </span>
+          </a>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ======== 服务 ======== -->
+  <section class="services wrap section" id="services">
+    <div class="section-grid">
+      <h2 class="section-title reveal">EXCEPTIONAL<br>SERVICES</h2>
+      <p class="section-note reveal">从采集、重建到分发，我们提供覆盖全流程的高斯泼溅服务：无人机与地面多源扫描、毫秒级实时渲染，以及 Web、VR 与移动端的无缝接入。</p>
+    </div>
+
+    <ul class="service-grid">
+      <li class="service reveal">
+        <img src="assets/img/service-01.webp" alt="实景扫描重建" loading="lazy">
+        <div class="service-label">实景扫描<br>重建</div>
+      </li>
+      <li class="service reveal">
+        <img src="assets/img/service-02.webp" alt="数字孪生空间" loading="lazy">
+        <div class="service-label">数字孪生<br>空间</div>
+      </li>
+      <li class="service reveal">
+        <img src="assets/img/service-03.jpg" alt="沉浸式看房导览" loading="lazy">
+        <div class="service-label">沉浸式<br>看房导览</div>
+      </li>
+      <li class="service reveal">
+        <img src="assets/img/service-04.webp" alt="文旅遗产存档" loading="lazy">
+        <div class="service-label">文旅遗产<br>存档</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ======== 行动号召 ======== -->
+  <section class="cta wrap" id="contact">
+    <p class="cta-text reveal">把你的空间交给高斯泼溅——<br>下一步，让我们一起把它变成可以走进的数字场景。</p>
+    <a class="link-more reveal" href="mailto:hello@tinttex.com">
+      <span>发送需求</span>
+      <span class="circle-btn circle-btn--sm" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h17M15 6l6 6-6 6"/></svg>
+      </span>
+    </a>
+  </section>
+
+  <!-- ======== 页脚 ======== -->
+  <footer class="footer">
+    <div class="footer-word" aria-hidden="true">TINTTEX</div>
+    <div class="footer-bar wrap">
+      <p class="footer-copy">© 2026 Tinttex · 保留所有权利</p>
+      <ul class="socials">
+        <li><a href="#top" aria-label="微信"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M9.6 4.6C6.3 4.6 3.6 6.7 3.6 9.3c0 1.5.9 2.9 2.2 3.8l-.7 2.3 2.5-1.3c.6.2 1.3.3 2 .3"/><path d="M14.4 8.1c2.9.2 5.2 2.2 5.2 4.6 0 1.3-.7 2.6-1.9 3.4l.6 2-2.2-1.1c-.5.1-1.1.2-1.7.2-2.7 0-5-1.7-5.3-3.9"/></svg></a></li>
+        <li><a href="#top" aria-label="哔哩哔哩"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3.5" y="7" width="17" height="12" rx="2.5"/><path d="M8 3.5 10.5 7M16 3.5 13.5 7M8.5 12v2.5M15.5 12v2.5"/></svg></a></li>
+        <li><a href="#top" aria-label="X（推特）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4.5 4.5 19.5 19.5M19.5 4.5 4.5 19.5"/></svg></a></li>
+        <li><a href="mailto:hello@tinttex.com" aria-label="邮件"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg></a></li>
+      </ul>
+      <div class="footer-links">
+        <a href="#top">法律声明</a>
+        <a href="#top">隐私与 Cookie 政策</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
