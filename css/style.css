@@ -15,6 +15,12 @@
   --ease: cubic-bezier(0.22, 0.61, 0.21, 1);
 }
 
+/* 多语言 CSS 变量（i18n.js 切换 <html lang> 时自动生效）：
+   瀑布流卡片 hover CTA「立刻进入」由伪元素 content 生成，无法走 data-i18n，改由变量按语言切换；简中用 .feed-wall 处的默认值 */
+:root[lang="zh-TW"] { --card-cta: "立即進入"; }
+:root[lang="en"]    { --card-cta: "Step In"; }
+:root[lang="ja"]    { --card-cta: "今すぐ見る"; }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
@@ -39,127 +45,368 @@ button { font-family: inherit; background: none; border: 0; color: inherit; curs
 ::selection { background: #fff; color: #0a0a0a; }
 
 /* ======== 顶部导航 ======== */
+/* 双元素布局：字标最左、操作区最右（原汉堡+全屏菜单已移除，字标本身即主页按钮） */
+/* fixed 脱离文档流：不占滚动空间 → hero 从视口顶部即开始 sticky 钉住，标题初始滚动不会被带上去一格；
+   滚过 hero 后导航持续悬浮在顶部（透明底，压在内容之上） */
 .nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
   height: 68px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
-  position: relative;
+  justify-content: space-between;
   z-index: 60;
 }
 
-.nav-burger {
-  justify-self: start;
-  width: 34px; height: 34px;
-  display: flex; flex-direction: column;
-  justify-content: center; gap: 7px;
+/* 瀑布流盖上后的导航底衬：实色黑背景，透明度由 main.js 按盖上进度写入 --nav-shade（0→1 同步可逆）；
+   z:-1 垫在字标/按钮之下（.nav fixed 自建 stacking context，-1 不会穿透到页面内容之下） */
+.nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #0a0a0a;
+  opacity: var(--nav-shade, 0);
+  pointer-events: none;
+  z-index: -1;
 }
-.nav-burger span {
-  display: block; width: 22px; height: 1.5px;
-  background: var(--text);
-  transition: transform 0.35s var(--ease), width 0.35s var(--ease);
-}
-.nav-burger:hover span:first-child { width: 14px; }
-body.menu-open .nav-burger span:first-child { transform: translateY(4.25px) rotate(45deg); }
-body.menu-open .nav-burger span:last-child  { transform: translateY(-4.25px) rotate(-45deg); }
 
 .nav-logo {
-  font-size: 19px;
+  font-size: 23px;
   font-weight: 600;
   letter-spacing: 0.01em;
 }
-.nav-logo sup { font-size: 9px; font-weight: 400; }
+.nav-logo sup { font-size: 10px; font-weight: 400; }
 
-.nav-contact {
+/* 顶部右侧操作区：账户登录（pill）+ 语言切换（圆形地球钮），与“探索更多”同族细边框/反色 hover */
+.nav-actions {
   justify-self: end;
-  font-size: 13px;
-  color: var(--text-dim);
-  transition: color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.nav-contact:hover { color: var(--text); }
+/* 登录/注册钮：同高 46px；登录=白底黑字主钮（Pinterest 红色主钮的黑白映射），注册=细边框幽灵钮（pill-btn 默认反色 hover）；
+   .pill-btn.nav-auth（0,2,0）压过 .pill-btn 基础（0,1,0），主钮 hover（0,3,0）压过 .pill-btn:hover */
+.pill-btn.nav-auth { height: 46px; padding: 0 20px; }
+.pill-btn.nav-auth--primary { background: #fff; color: #0a0a0a; border-color: #fff; }
+.pill-btn.nav-auth--primary:hover { background: rgba(255, 255, 255, 0.82); border-color: rgba(255, 255, 255, 0.82); color: #0a0a0a; }
+/* 语言钮只反色，不做 .circle-btn 默认的 hover 右移（那是给“更多”箭头钮的语义）；
+   .circle-btn.nav-lang:hover（0,3,0）压过 .circle-btn:hover（0,2,0，且源序在后）的 translateX */
+.circle-btn.nav-lang:hover { transform: none; }
 
-/* ======== 全屏菜单 ======== */
-.menu {
-  position: fixed; inset: 0;
-  background: rgba(8, 8, 8, 0.96);
-  backdrop-filter: blur(8px);
-  z-index: 50;
-  display: flex; align-items: center;
-  opacity: 0; visibility: hidden;
-  transition: opacity 0.4s var(--ease), visibility 0.4s;
-}
-body.menu-open .menu { opacity: 1; visibility: visible; }
-
-.menu ul {
-  padding-inline: var(--pad);
-  width: 100%;
-}
-.menu a {
-  display: block;
-  font-size: clamp(34px, 6vw, 72px);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.35;
-  color: var(--text);
-  width: fit-content;
-  transform: translateY(20px);
+/* ======== 语言切换浮动面板：点击地球钮在其下方弹出，深黑背景 + 细描边；选项沿用 .pill-btn（同“账户登录”） ======== */
+.lang-switch { position: relative; }
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 70;
+  min-width: 150px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-deep);                 /* 深黑 */
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
   opacity: 0;
-  transition: transform 0.5s var(--ease), opacity 0.5s var(--ease), color 0.3s;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.26s var(--ease), transform 0.26s var(--ease), visibility 0.26s;
 }
-body.menu-open .menu a { transform: none; opacity: 1; }
-.menu a:hover { color: var(--text-dim); }
-.menu li:nth-child(1) a { transition-delay: 0.05s; }
-.menu li:nth-child(2) a { transition-delay: 0.1s; }
-.menu li:nth-child(3) a { transition-delay: 0.15s; }
-.menu li:nth-child(4) a { transition-delay: 0.2s; }
-.menu li:nth-child(5) a { transition-delay: 0.25s; }
+.lang-switch.open .lang-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+/* 下拉项：全宽 pill-btn，文字左对齐、内距收紧；.pill-btn.lang-opt（0,2,0）压过 .pill-btn 基础（0,1,0） */
+.pill-btn.lang-opt {
+  width: 100%;
+  height: 40px;
+  padding: 0 16px;
+  justify-content: flex-start;
+  letter-spacing: 0.08em;
+}
+/* 当前语言：轻微白底填充标记（区别于非选中项 hover 的全反色） */
+.pill-btn.lang-opt[aria-checked="true"] {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.55);
+}
 
-/* ======== Hero ======== */
+/* ======== 登录 / 注册弹窗：Pinterest 式居中卡片；配色映射——品牌红主钮 → 黑底白字，卡片用暖白/深黑灰阶 ======== */
+body.modal-open { overflow: hidden; }   /* 锁页面滚动：弹窗开着时鼠标滚轮不再驱动页面/scrub */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease), visibility 0.3s;
+}
+.modal.show { visibility: visible; opacity: 1; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.65); }   /* 背景压暗 */
+.modal-card {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  color: #0a0a0a;
+  border-radius: 16px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.3s var(--ease);
+}
+.modal.show .modal-card { transform: none; }
+.modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  color: #0a0a0a;
+  border-radius: 50%;
+  transition: background 0.25s var(--ease);
+}
+.modal-close:hover { background: rgba(0, 0, 0, 0.06); }
+.modal-close svg { width: 20px; height: 20px; }
+
+/* 卡片内排版（浅色卡面上的深色灰阶） */
+.modal-form { padding: 44px 36px 26px; }
+.modal-logo {
+  width: 48px; height: 48px;
+  margin-bottom: 18px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-deep); color: #fff;
+  border-radius: 50%;
+  font-size: 20px; font-weight: 600;
+}
+.modal-title { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; }
+.modal-sub { margin-top: 6px; font-size: 13.5px; color: #6b6a66; }
+
+.field { position: relative; margin-top: 12px; }
+.field input {
+  width: 100%; height: 50px;
+  padding: 0 44px 0 14px;
+  font: inherit; font-size: 14px; color: #0a0a0a;
+  background: #fff;
+  border: 1px solid rgba(10, 10, 10, 0.35);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field input::placeholder { color: #8a8984; }
+.field input:focus { border-color: #0a0a0a; box-shadow: inset 0 0 0 1px #0a0a0a; }
+.field-icon {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  color: #6b6a66;
+}
+.field-icon svg { width: 18px; height: 18px; }
+button.field-icon { border-radius: 50%; transition: background 0.2s; cursor: pointer; }
+button.field-icon:hover { background: rgba(0, 0, 0, 0.06); }
+.field-icon--info { right: 44px; }               /* 双图标时 info 在眼曈/日历左侧 */
+.field-hint { margin-top: 6px; font-size: 12px; color: #6b6a66; }
+.pw-toggle .i-eye-off { display: none; }         /* 密码可见性切换的双图标 */
+.pw-toggle.is-off .i-eye { display: none; }
+.pw-toggle.is-off .i-eye-off { display: block; }
+
+.forgot {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 12.5px; font-weight: 600; color: #0a0a0a;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.forgot:hover { opacity: 0.65; }
+
+/* 主钮：图中的红底白字 → 我们的黑底白字；胶囊形同参考图 */
+.btn-solid {
+  width: 100%; height: 48px; margin-top: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #0a0a0a; color: #fff;
+  border: 1px solid #0a0a0a;
+  border-radius: 24px;
+  font-size: 14px; font-weight: 600; letter-spacing: 0.02em;
+  transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+.btn-solid:hover { background: #333; border-color: #333; }
+.or-sep {
+  display: flex; align-items: center; gap: 12px;
+  margin: 14px 0;
+  color: #6b6a66; font-size: 12px;
+}
+.or-sep::before, .or-sep::after { content: ""; flex: 1; height: 1px; background: rgba(10, 10, 10, 0.15); }
+.btn-ghost {
+  width: 100%; height: 48px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  background: #fff; color: #0a0a0a;
+  border: 1px solid rgba(10, 10, 10, 0.35);
+  border-radius: 24px;
+  font-size: 14px; font-weight: 500;
+  transition: background 0.3s var(--ease);
+}
+.btn-ghost:hover { background: var(--text); }    /* 暖白 #f2f1ee 作 hover 底色 */
+.btn-ghost svg { width: 18px; height: 18px; flex: none; }
+
+.link-inline,
+.link-plain {
+  background: none; border: 0; padding: 0;
+  font: inherit; font-size: inherit;
+  color: inherit;
+  text-decoration: underline; text-underline-offset: 2px;
+  cursor: pointer;
+}
+.link-inline { font-weight: 600; color: #0a0a0a; }
+.link-inline:hover, .link-plain:hover, .modal-qr strong:hover { opacity: 0.65; }
+.modal-meta { margin-top: 16px; font-size: 12.5px; color: #6b6a66; }
+.modal-legal { margin-top: 14px; font-size: 11.5px; line-height: 1.7; color: #8a8984; }
+
+/* 登录卡：左表单 + 右扫码栏（浅底用暖白）；窄屏隐藏扫码栏 */
+.modal-card--login { width: min(860px, 100%); display: grid; grid-template-columns: 1fr 1fr; }
+.modal-card--login .modal-form { padding-right: 32px; }
+.modal-qr {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 10px;   /* 内缩一圈，与 Pinterest 右栏留边一致 */
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px;
+  padding: 24px;
+  background: var(--text);
+  border-radius: 10px;
+  text-align: center;
+}
+.modal-qr .qr-box { background: #fff; border: 1px solid rgba(10, 10, 10, 0.08); border-radius: 12px; padding: 14px; }
+.modal-qr .qr-box svg { display: block; width: 148px; height: 148px; }
+.modal-qr p { font-size: 13.5px; line-height: 1.65; color: #3a3936; max-width: 220px; }
+.modal-qr strong { color: #0a0a0a; }
+
+.modal-card--signup { width: min(460px, 100%); }
+
+@media (max-width: 860px) {
+  .modal-card--login { grid-template-columns: 1fr; }
+  .modal-qr { display: none; }
+  .modal-card--login .modal-form { padding-right: 36px; }
+  .modal-form { padding: 40px 24px 22px; }
+}
+
+/* ======== Hero（200vh 高 + sticky pin，吞掉 100vh 滚动：模糊标题→scrub 视频→定格后变暗变模糊“固定在原地”→黑幕+瀑布流盖上） ======== */
 .hero {
   position: relative;
-  height: min(58vw, 90vh);
+  height: 200vh;   /* 默认值；调参面板会写 inline style 覆盖。sticky 可钉距离 = HERO_H - 100vh = 100vh */
+  /* 不设 overflow:hidden —— sticky 需要父级可滚动 */
+}
+
+/* 钉住层：视觉上始终占满视口，video / shade / canvas / title 都在这里面分层 */
+.hero-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
   min-height: 480px;
   overflow: hidden;
 }
 
+/* hero 视频：position:fixed 的永久视口背景（z-index:-1，在所有内容之下、body 底色之上）。
+   fixed 不随滚动移动 → 视频绝不会“被滚到页面上面去”；播放进度由 main.js 按滚动 scrub 驱动 currentTime，
+   定格后按滚动加 blur+brightness 变模糊变暗，但 opacity 始终为 1、常驻可见 → 瀑布流背后暗调模糊的背景 */
 .hero-video {
-  position: absolute; inset: 0;
+  position: fixed; inset: 0;
   width: 100%; height: 100%;
   object-fit: cover;
+  z-index: -1;
 }
 
-/* 上下渐变压暗，保证标题与文案可读 */
+/* 上下渐变压暗，保证标题与文案可读；底部长行程渐变消隐至页面背景色 */
 .hero-shade {
-  position: absolute; inset: 0;
+  position: fixed; inset: 0;   /* fixed 常驻背景层，不随滚动上移 */
   background:
-    linear-gradient(180deg, rgba(8,8,8,0.55) 0%, rgba(8,8,8,0.08) 34%, rgba(8,8,8,0.12) 62%, rgba(10,10,10,0.82) 100%);
+    linear-gradient(180deg,
+      rgba(8,8,8,0.55) 0%,
+      rgba(8,8,8,0.08) 30%,
+      rgba(10,10,10,0.12) 48%,
+      rgba(12,12,12,0.28) 62%,
+      rgba(13,13,13,0.5) 74%,
+      rgba(14,14,14,0.72) 84%,
+      rgba(14,14,14,0.9) 92%,
+      #0e0e0e 100%);
+  z-index: -1;   /* 负 z：背景层，位于所有内容（footer/feed/标题）之下、body 底色之上 */
 }
 
-.hero-title {
-  position: absolute;
-  top: clamp(2px, 0.8vw, 16px);
-  left: 50%; transform: translateX(-50%);
-  font-size: 22.5vw;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  line-height: 0.94;
-  white-space: nowrap;
-  color: #fff;
-  user-select: none;
+/* 渐变黑幕：沙发前景挡镜后压暗画面，衔接瀑布流上升（opacity 由 main.js 按 p∈[VEIL_START,VEIL_END] 淡入）；
+   与 video/shade 同为 fixed + z-index:-1 背景层，DOM 顺序最后 → 叠在视频/shade 之上，但整体在 .feed(z5) 与标题(z3) 之下 */
+.hero-veil {
+  position: fixed; inset: 0;   /* fixed 常驻背景层 */
+  background: linear-gradient(180deg,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.35) 42%,
+    rgba(0,0,0,0.82) 74%,
+    rgba(0,0,0,0.98) 100%);
+  opacity: 0;
+  z-index: -1;   /* 负 z：背景层，DOM 在 video/shade 之后 → 叠在它们之上，但仍在内容之下 */
+  pointer-events: none;
 }
 
+/* Three.js 3D 卡片画布：暂时屏蔽（以后重开：取消注释即可，配合 index.html 的 canvas 与 hero-scene.js 脚本） */
+/*
+.hero-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+*/
+
+/* 标题组：主/副标题包在同一个 wrapper，main.js 对整组驱动 translate/scale/blur/opacity；
+   组内正常文档流 → 英文等长文案折行时副标题自动跟随下移，不会叠字 */
 .hero-copy {
   position: absolute;
-  left: var(--pad); bottom: 6%;
-  max-width: 350px;
-  font-size: 13.5px;
-  line-height: 1.75;
-  color: rgba(255, 255, 255, 0.92);
+  top: 38%;   /* 中文单行标题的基准位 */
+  left: 50%; transform: translateX(-50%);
+  max-width: min(92vw, 1100px);
+  text-align: center;
+  user-select: none;
+  will-change: transform, filter, opacity;
+  z-index: 3;
 }
 
-.hero-arrow {
-  position: absolute;
-  right: var(--pad); bottom: 6%;
+/* 主标题：中文短句单行展示 */
+.hero-title {
+  margin: 0;
+  font-size: clamp(44px, 7.2vw, 108px);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.12;
+  white-space: nowrap;
+  color: #fff;
+}
+
+/* 英文/日文文案较长：窄窗口时允许折行（行高稍松，保持呼吸感）；
+   日文标题在 en 移动端字号下约 12 字，不折行会溢出屏幕 */
+html[lang="en"] .hero-title,
+html[lang="ja"] .hero-title {
+  white-space: normal;
+  line-height: 1.18;
+}
+
+/* 英文/日文标题会折成两行、整组更高：上移到 28%，避开底部 32% 处的 “Explore more/もっと見る” CTA；中文单行保持 38% 不过分靠上 */
+html[lang="en"] .hero-copy,
+html[lang="ja"] .hero-copy {
+  top: 28%;
+}
+
+/* 副标题：随文档流跟在主标题下方；加轻微投影提升在明亮视频画面上的可读性 */
+.hero-sub {
+  margin: 26px 0 0;
+  font-size: clamp(14px, 1.3vw, 19px);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.78);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 2px 16px rgba(0, 0, 0, 0.35);
 }
 
 /* ======== 圆形箭头按钮 ======== */
@@ -194,6 +441,35 @@ body.menu-open .menu a { transform: none; opacity: 1; }
 .link-more > span:first-child { transition: opacity 0.3s; }
 .link-more:hover > span:first-child { opacity: 0.65; }
 .link-more:hover .circle-btn { transform: translateX(4px); }
+
+/* ======== 探索更多 CTA（fixed 固定在视口，与标题同步模糊渐隐，完全消失后 visibility:hidden 断掉点击） ======== */
+.feed-cta {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: 32%;
+  display: flex;
+  justify-content: center;
+  z-index: 40;
+  will-change: opacity, filter;
+}
+
+/* 细边框圆角矩形按钮（与 .circle-btn 同族边框/反色 hover，但为矩形 + 文字） */
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  transition: background 0.35s var(--ease), color 0.35s var(--ease), border-color 0.35s var(--ease);
+}
+.pill-btn svg { width: 18px; height: 18px; transition: transform 0.35s var(--ease); }
+.pill-btn:hover { background: #fff; color: #0a0a0a; border-color: #fff; }
+.pill-btn:hover svg { transform: translateX(3px); }
 
 /* ======== 通用 Section ======== */
 .section { padding-block: clamp(64px, 8vw, 130px) 0; }
@@ -403,8 +679,30 @@ body.menu-open .menu a { transform: none; opacity: 1; }
 }
 
 /* ======== 页脚 ======== */
-.footer { padding-top: clamp(30px, 4vw, 70px); overflow: hidden; }
+/* position:relative + z-index:1 必不可少：.hero-pin 是 sticky（自带 stacking context），其内部 fixed z:-1 的黑幕/视频会整体盖在所有 static 内容之上；footer 提进定位层（z:1 > hero-pin 的 z:auto，且 < 瀑布流 z:5）才不会被滚到底时的纯黑黑幕盖住 */
+.footer { position: relative; z-index: 1; padding-top: 0; overflow: hidden; }
 
+/* 页脚链接区（Pinterest 式排版）：左字标 + 右三列链接，位于大字标之下的纯黑底部区域 */
+.footer-nav {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 40px;
+  padding-block: 16px 40px;
+}
+.footer-brand { font-size: 30px; font-weight: 600; color: var(--text); }
+.footer-brand sup { font-size: 12px; font-weight: 400; }
+.footer-cols { display: flex; gap: clamp(48px, 9vw, 140px); }
+.footer-col { display: flex; flex-direction: column; gap: 14px; min-width: 110px; }
+.footer-col h3 { margin: 0 0 4px; font-size: 14px; font-weight: 700; letter-spacing: 0.02em; color: var(--text); }
+.footer-col a { width: fit-content; font-size: 14px; color: var(--text-dim); transition: color 0.3s; }
+.footer-col a:hover { color: var(--text); }
+@media (max-width: 768px) {
+  .footer-nav { flex-direction: column; gap: 30px; padding-block: 10px 30px; }
+  .footer-cols { flex-wrap: wrap; gap: 32px 56px; }
+}
+
+/* 底部巨型标题：很淡的深灰、紧贴 footer 顶部、下方 1/3 被裁掉（height + overflow:hidden） */
 .footer-word {
   font-size: 22.5vw;
   font-weight: 600;
@@ -412,9 +710,10 @@ body.menu-open .menu a { transform: none; opacity: 1; }
   line-height: 0.94;
   white-space: nowrap;
   text-align: center;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.07);
   user-select: none;
-  transform: translateY(6%);
+  height: 0.47em;    /* ≈ 字体 cap-height (0.7em) 的 2/3 + half-leading，仅露字的上方 2/3，下方 1/3 被裁 */
+  overflow: hidden;
 }
 
 .footer-bar {
@@ -454,6 +753,113 @@ body.menu-open .menu a { transform: none; opacity: 1; }
 .footer-links a { transition: color 0.3s; }
 .footer-links a:hover { color: var(--text); }
 
+/* ======== 场景瀑布流（react-photo-album 错拼照片墙） ======== */
+/* 布局由 ColumnsPhotoAlbum 计算：列宽按内容比例不等宽分配、各列等高收尾，
+   任何屏宽下紧密无空洞；卡片比例来自每张照片的 width/height 元数据 */
+/* 负 margin 上移 + 视差：让瀑布流在视频仍慢速下降时就提前上升，overlay 在钉住的视频背景（及黑幕）之上，
+   形成“前景瀑布流快、背景视频慢”的纵深；z-index 高于 sticky 的 .hero-pin（sticky 自带 stacking context，z-index auto），从而覆盖视频与标题 */
+.feed {
+  position: relative;
+  z-index: 5;
+  margin-top: 0;   /* 默认值；调参面板会写 inline style 覆盖。负=瀑布流提前上升与 hero 重叠；另 JS 按 stage 进度对 .feed 施加 translateY 做“盖上”动画 */
+  padding: clamp(10px, 1.4vw, 26px);
+}
+
+/* 照片墙卡片：真实图片以 cover 裁入元数据比例，轻微圆角；
+   卡片本身作为“窗口”不动，hover 时内部图片放大 + 根据鼠标位置反向平移（--tx/--ty 由 main.js 注入），
+   制造“透过窗口看一张更大的图”的裁切视差错觉。
+   用独立属性 scale / translate 分离两条 transition：
+   - scale：0.5s 渐变进入
+   - translate：0.4s 平滑跟随鼠标（略带滞后更柔和），不会被 scale 的长 transition 拖慢 */
+/* 卡片 hover：底部向上渐变黑色 overlay + 细框风格按钮“立刻进入”（伪元素实现，不侵入 React 挂载） */
+.feed-wall .react-photo-album--photo {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.feed-wall .react-photo-album--photo::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 62%;
+  background: linear-gradient(to top,
+    rgba(0, 0, 0, 0.82) 0%,
+    rgba(0, 0, 0, 0.5) 42%,
+    rgba(0, 0, 0, 0) 100%);
+  opacity: 0;
+  transition: opacity 0.45s var(--ease);
+  pointer-events: none;
+  z-index: 2;
+}
+/* 卡片 CTA 文案走 CSS 变量（伪元素 content 无法用 data-i18n 替换）：默认简中，其他语言在 :root[lang] 处覆盖 */
+.feed-wall .react-photo-album--photo::after {
+  content: var(--card-cta, "立刻进入");
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  padding: 8px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+  pointer-events: auto;   /* 接收 hover，光标才能落在按钮上（伪元素默认不拦截事件） */
+  cursor: pointer;        /* “立刻进入”作为可点 CTA，hover 显示手指光标 */
+  z-index: 3;
+}
+.feed-wall .react-photo-album--photo:hover::before { opacity: 1; }
+.feed-wall .react-photo-album--photo:hover::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* 内部图片 hover：放大 + 鼠标反向平移（“透过窗口看一张更大的图”裁切视差） */
+.feed-wall .react-photo-album--image {
+  object-fit: cover;
+  border-radius: 8px;
+  scale: 1;
+  translate: 0 0;
+  transition: scale 0.5s var(--ease), translate 0.4s var(--ease);
+  will-change: transform;
+}
+.feed-wall .react-photo-album--photo:hover .react-photo-album--image {
+  scale: 1.15;
+  translate: var(--tx, 0px) var(--ty, 0px);
+}
+
+/* CDN 不可用时的静态兜底网格（React 挂载后会被整体替换） */
+.feed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: clamp(3px, 0.4vw, 6px);
+}
+.feed-item {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #161616;
+}
+.feed-item img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  transform: scale(1.01);
+  transition: transform 1.2s var(--ease);
+}
+.feed-item:hover img { transform: scale(1.05); }
+
+/* 兜底网格的裁切变体：横图取左/右，竖图取上/下，默认为中 */
+.feed-item img.crop-l { object-position: 0% 50%; }
+.feed-item img.crop-r { object-position: 100% 50%; }
+.feed-item img.crop-t { object-position: 50% 0%; }
+.feed-item img.crop-b { object-position: 50% 100%; }
+
 /* ======== 进场动画 ======== */
 .reveal {
   opacity: 0;
@@ -465,8 +871,10 @@ body.menu-open .menu a { transform: none; opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
-  .hero-video { display: none; }
-  .hero { background: #151515 url("../assets/img/scene-02.jpg") center/cover no-repeat; }
+  /* 降级：取消 sticky 钉住与 3D 卡片，hero 回到单屏静态背景 */
+  .hero { height: 100vh; }
+  .hero-pin { position: static; background: #151515 url("../assets/img/scene-02.jpg") center/cover no-repeat; }
+  .hero-video, .hero-canvas { display: none; }
 }
 
 /* ======== 响应式 ======== */
@@ -480,9 +888,11 @@ body.menu-open .menu a { transform: none; opacity: 1; }
 }
 
 @media (max-width: 768px) {
-  .hero { height: 72vh; min-height: 420px; }
-  .hero-title { font-size: 23vw; }
-  .hero-copy { max-width: 270px; }
+  .hero { height: 180vh; }   /* 移动端压缩钉住距离（80vh），视频末帧仍接 pin 释放无 hold */
+  .hero-pin { min-height: 420px; }
+  .hero-title { font-size: clamp(34px, 10vw, 56px); }
+  .hero-sub  { font-size: 13px; letter-spacing: 0.1em; }
+  .feed { margin-top: 0; }   /* 移动端与桌面一致（面板 inline style 会覆盖） */
 
   .section-grid { grid-template-columns: 1fr; gap: 20px; }
   .section-note, .about-body { grid-column: 1; }
@@ -503,5 +913,14 @@ body.menu-open .menu a { transform: none; opacity: 1; }
   .about-body { grid-template-columns: 1fr; }
   .service-grid { grid-template-columns: 1fr; }
   .service { aspect-ratio: 4 / 5; }
-  .nav-contact { display: none; }
+  /* 窄屏收紧右侧操作区，避免与 burger/logo 挤爆：登录钮与地球钮同缩到 38px */
+  .nav-actions { gap: 8px; }
+  .pill-btn.nav-auth { height: 38px; padding: 0 13px; font-size: 12px; letter-spacing: 0.06em; }
+  .nav-lang.circle-btn--sm { width: 38px; height: 38px; }
+  .nav-lang svg { width: 17px; height: 17px; }
+}
+
+/* reduced-motion 下 hero 是静态单屏（非 sticky），取消瀑布流上移重叠（置于末尾以覆盖移动端的值） */
+@media (prefers-reduced-motion: reduce) {
+  .feed { margin-top: 0; }
 }
