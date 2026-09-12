@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 移动端禁手势/双击缩放：maximum-scale+user-scalable 关捏合，双击与长按行为由 CSS touch-action/user-select 全局兜底 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tinttex — 高斯泼溅场景展示</title>
   <meta name="description" content="Tinttex 以三维高斯泼溅（3D Gaussian Splatting）技术，将真实空间复现为可漫游、可分享的沉浸式数字场景。">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230e0e0e'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='18' font-weight='700' fill='%23fff' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E">
@@ -200,12 +201,6 @@
           <a href="#top" data-i18n="foot.shop">Shop</a>
           <a href="#top" data-i18n="foot.help">Help Center</a>
         </div>
-        <div class="footer-col">
-          <h3 data-i18n="foot.policies">Policies</h3>
-          <a href="#top" data-i18n="foot.terms">Terms of service</a>
-          <a href="#top" data-i18n="foot.privacy">Privacy policy</a>
-          <a href="#top" data-i18n="foot.nonuser">Non-user notice</a>
-        </div>
       </div>
     </div>
     <div class="footer-bar wrap">
@@ -337,7 +332,7 @@
       <div class="modal-form">
         <div class="modal-logo" aria-hidden="true">T</div>
         <h2 class="modal-title" id="loginTitle" data-i18n="login.title">欢迎来到 Tinttex</h2>
-        <p class="modal-sub" data-i18n="login.sub">登录，探索高斯泼溅带来的更多可能</p>
+        <p class="modal-sub" data-i18n="login.sub">登录继续逛 1:1 还原的佛山展厅，收藏心仪好物，先看效果再搬回家</p>
         <div class="field">
           <input id="loginEmail" type="email" placeholder="电子邮箱" data-i18n-placeholder="login.emailPh" autocomplete="email">
         </div>
@@ -351,10 +346,22 @@
         <button class="forgot" type="button" data-i18n="login.forgot">忘记密码？</button>
         <button class="btn-solid" type="button" data-i18n="login.submit">登录</button>
         <div class="or-sep" data-i18n="common.or">或</div>
-        <button class="btn-ghost" type="button">
+        <!-- 第三方登录按语言切换（CSS html[lang] 门控）：英/日 → Google 整条钮；中文 → 微信/支付宝/抖音三个圆形图标横排 -->
+        <button class="btn-ghost oauth-google" type="button">
           <svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.32A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.41 5.41 0 0 1 0-3.44V4.96H.96a9 9 0 0 0 0 8.08l3.01-2.32z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59A9 9 0 0 0 .96 4.96l3.01 2.32C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
           <span data-i18n="common.google">使用 Google 账号继续</span>
         </button>
+        <div class="oauth-cn">
+          <button class="oauth-cn-btn" type="button" aria-label="微信" data-i18n-aria="aria.wechat">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#07C160" d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.03zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/></svg>
+          </button>
+          <button class="oauth-cn-btn" type="button" aria-label="支付宝" data-i18n-aria="aria.alipay">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1677FF" d="M19.695 15.07c3.426 1.158 4.203 1.22 4.203 1.22V3.846c0-2.124-1.705-3.845-3.81-3.845H3.914C1.808.001.102 1.722.102 3.846v16.31c0 2.123 1.706 3.845 3.813 3.845h16.173c2.105 0 3.81-1.722 3.81-3.845v-.157s-6.19-2.602-9.315-4.119c-2.096 2.602-4.8 4.181-7.607 4.181-4.75 0-6.361-4.19-4.112-6.949.49-.602 1.324-1.175 2.617-1.497 2.025-.502 5.247.313 8.266 1.317a16.796 16.796 0 0 0 1.341-3.302H5.781v-.952h4.799V6.975H4.77v-.953h5.81V3.591s0-.409.411-.409h2.347v2.84h5.744v.951h-5.744v1.704h4.69a19.453 19.453 0 0 1-1.986 5.06c1.424.52 2.702 1.011 3.654 1.333m-13.81-2.032c-.596.06-1.71.325-2.321.869-1.83 1.608-.735 4.55 2.968 4.55 2.151 0 4.301-1.388 5.99-3.61-2.403-1.182-4.438-2.028-6.637-1.809"/></svg>
+          </button>
+          <button class="oauth-cn-btn" type="button" aria-label="抖音" data-i18n-aria="aria.douyin">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#0a0a0a" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+          </button>
+        </div>
         <p class="modal-meta"><span data-i18n="login.metaPre">还没有账户？</span><button class="link-inline" type="button" data-modal-switch="signupModal" data-i18n="login.metaLink">免费注册</button></p>
         <p class="modal-legal"><span data-i18n="login.legal1">继续即表示你同意我们的</span> <button class="link-plain" type="button" data-i18n="legal.terms">服务条款</button><span data-i18n="login.legal2">，并确认已阅读</span> <button class="link-plain" type="button" data-i18n="legal.privacy">隐私政策</button><span data-i18n="common.period">。</span></p>
       </div>
@@ -393,7 +400,7 @@
       <div class="modal-form">
         <div class="modal-logo" aria-hidden="true">T</div>
         <h2 class="modal-title" id="signupTitle" data-i18n="signup.title">欢迎来到 Tinttex</h2>
-        <p class="modal-sub" data-i18n="signup.sub">免费注册，探索高斯泼溅带来的更多可能</p>
+        <p class="modal-sub" data-i18n="signup.sub">免费注册，把逛到的灵感收进方案，摆进自己家预览效果再下单</p>
         <div class="field">
           <input id="signupEmail" type="email" placeholder="输入你的电子邮箱" data-i18n-placeholder="signup.emailPh" autocomplete="email">
         </div>
@@ -406,17 +413,24 @@
           </button>
         </div>
         <p class="field-hint" data-i18n="signup.hint">请使用至少 8 个字符，包含字母、数字和符号</p>
-        <div class="field">
-          <input id="signupBirth" type="text" inputmode="numeric" placeholder="生日（mm/dd/yyyy）" data-i18n-placeholder="signup.birthPh">
-          <span class="field-icon field-icon--info" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></span>
-          <span class="field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
-        </div>
         <button class="btn-solid" type="button" data-i18n="signup.submit">继续</button>
         <div class="or-sep" data-i18n="common.or">或</div>
-        <button class="btn-ghost" type="button">
+        <!-- 第三方注册同登录：英/日 Google 整条钮，中文三图标横排（CSS html[lang] 门控） -->
+        <button class="btn-ghost oauth-google" type="button">
           <svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.32A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.41 5.41 0 0 1 0-3.44V4.96H.96a9 9 0 0 0 0 8.08l3.01-2.32z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59A9 9 0 0 0 .96 4.96l3.01 2.32C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
           <span data-i18n="common.google">使用 Google 账号继续</span>
         </button>
+        <div class="oauth-cn">
+          <button class="oauth-cn-btn" type="button" aria-label="微信" data-i18n-aria="aria.wechat">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#07C160" d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.03zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/></svg>
+          </button>
+          <button class="oauth-cn-btn" type="button" aria-label="支付宝" data-i18n-aria="aria.alipay">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1677FF" d="M19.695 15.07c3.426 1.158 4.203 1.22 4.203 1.22V3.846c0-2.124-1.705-3.845-3.81-3.845H3.914C1.808.001.102 1.722.102 3.846v16.31c0 2.123 1.706 3.845 3.813 3.845h16.173c2.105 0 3.81-1.722 3.81-3.845v-.157s-6.19-2.602-9.315-4.119c-2.096 2.602-4.8 4.181-7.607 4.181-4.75 0-6.361-4.19-4.112-6.949.49-.602 1.324-1.175 2.617-1.497 2.025-.502 5.247.313 8.266 1.317a16.796 16.796 0 0 0 1.341-3.302H5.781v-.952h4.799V6.975H4.77v-.953h5.81V3.591s0-.409.411-.409h2.347v2.84h5.744v.951h-5.744v1.704h4.69a19.453 19.453 0 0 1-1.986 5.06c1.424.52 2.702 1.011 3.654 1.333m-13.81-2.032c-.596.06-1.71.325-2.321.869-1.83 1.608-.735 4.55 2.968 4.55 2.151 0 4.301-1.388 5.99-3.61-2.403-1.182-4.438-2.028-6.637-1.809"/></svg>
+          </button>
+          <button class="oauth-cn-btn" type="button" aria-label="抖音" data-i18n-aria="aria.douyin">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#0a0a0a" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+          </button>
+        </div>
         <p class="modal-meta"><span data-i18n="signup.meta1Pre">已有账户？</span><button class="link-inline" type="button" data-modal-switch="loginModal" data-i18n="signup.meta1Link">登录</button></p>
         <p class="modal-meta"><span data-i18n="signup.meta2Pre">你是企业？</span><button class="link-inline" type="button" data-i18n="signup.meta2Link">从这里开始</button></p>
         <p class="modal-legal"><span data-i18n="signup.legal1">继续，即表示你同意我们的</span> <button class="link-plain" type="button" data-i18n="legal.terms">服务条款</button> <span data-i18n="signup.legal2">并确认已阅读</span> <button class="link-plain" type="button" data-i18n="legal.privacy">隐私政策</button><span data-i18n="common.period">。</span></p>

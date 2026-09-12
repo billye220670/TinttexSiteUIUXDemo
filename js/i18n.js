@@ -49,15 +49,12 @@
       "foot.explore": "Explore",
       "foot.shop": "Shop",
       "foot.help": "Help Center",
-      "foot.policies": "Policies",
-      "foot.terms": "Terms of service",
-      "foot.privacy": "Privacy policy",
-      "foot.nonuser": "Non-user notice",
-
       "foot.copy": "© 2026 Tinttex · 保留所有权利",
       "foot.legal": "法律声明",
       "foot.cookie": "隐私与 Cookie 政策",
       "aria.wechat": "微信",
+      "aria.alipay": "支付宝",
+      "aria.douyin": "抖音",
       "aria.bili": "哔哩哔哩",
       "aria.x": "X（推特）",
       "aria.mail": "邮件",
@@ -71,7 +68,7 @@
       "legal.privacy": "隐私政策",
 
       "login.title": "欢迎来到 Tinttex",
-      "login.sub": "登录，探索高斯泼溅带来的更多可能",
+      "login.sub": "登录继续逛 1:1 还原的佛山展厅，收藏心仪好物，先看效果再搬回家",
       "login.emailPh": "电子邮箱",
       "login.pwPh": "密码",
       "login.forgot": "忘记密码？",
@@ -84,11 +81,10 @@
       "login.qr2": "立即登录",
 
       "signup.title": "欢迎来到 Tinttex",
-      "signup.sub": "免费注册，探索高斯泼溅带来的更多可能",
+      "signup.sub": "免费注册，把逛到的灵感收进方案，摆进自己家预览效果再下单",
       "signup.emailPh": "输入你的电子邮箱",
       "signup.pwPh": "创建密码",
       "signup.hint": "请使用至少 8 个字符，包含字母、数字和符号",
-      "signup.birthPh": "生日（mm/dd/yyyy）",
       "signup.submit": "继续",
       "signup.meta1Pre": "已有账户？",
       "signup.meta1Link": "登录",
@@ -143,16 +139,13 @@
       "foot.explore": "探索",
       "foot.shop": "商店",
       "foot.help": "協助中心",
-      "foot.policies": "政策",
-      "foot.terms": "服務條款",
-      "foot.privacy": "隱私權政策",
-      "foot.nonuser": "非使用者通知",
-
       /* 页脚底栏 */
       "foot.copy": "© 2026 Tinttex · 保留所有權利",
       "foot.legal": "法律聲明",
       "foot.cookie": "隱私與 Cookie 政策",
       "aria.wechat": "微信",
+      "aria.alipay": "支付寶",
+      "aria.douyin": "抖音",
       "aria.bili": "哔哩哔哩",
       "aria.x": "X（推特）",
       "aria.mail": "郵件",
@@ -168,7 +161,7 @@
 
       /* 登录弹窗 */
       "login.title": "歡迎來到 Tinttex",
-      "login.sub": "登入，探索高斯潑濺帶來的更多可能",
+      "login.sub": "登入繼續逛 1:1 還原的佛山展廳，收藏心儀好物，先看效果再搬回家",
       "login.emailPh": "電子郵件",
       "login.pwPh": "密碼",
       "login.forgot": "忘記密碼？",
@@ -182,11 +175,10 @@
 
       /* 注册弹窗 */
       "signup.title": "歡迎來到 Tinttex",
-      "signup.sub": "免費註冊，探索高斯潑濺帶來的更多可能",
+      "signup.sub": "免費註冊，把逛到的靈感收進方案，擺進自己家預覽效果再下單",
       "signup.emailPh": "輸入你的電子郵件",
       "signup.pwPh": "建立密碼",
       "signup.hint": "請使用至少 8 個字元，包含字母、數字和符號",
-      "signup.birthPh": "生日（mm/dd/yyyy）",
       "signup.submit": "繼續",
       "signup.meta1Pre": "已有帳戶？",
       "signup.meta1Link": "登入",
@@ -241,16 +233,13 @@
       "foot.explore": "見つける",
       "foot.shop": "ショップ",
       "foot.help": "ヘルプセンター",
-      "foot.policies": "ポリシー",
-      "foot.terms": "利用規約",
-      "foot.privacy": "プライバシーポリシー",
-      "foot.nonuser": "非ユーザー向け通知",
-
       /* 页脚底栏 */
       "foot.copy": "© 2026 Tinttex · All rights reserved",
       "foot.legal": "法務情報",
       "foot.cookie": "プライバシーと Cookie ポリシー",
       "aria.wechat": "WeChat",
+      "aria.alipay": "アリペイ",
+      "aria.douyin": "Douyin（抖音）",
       "aria.bili": "ビリビリ",
       "aria.x": "X（Twitter）",
       "aria.mail": "メール",
@@ -268,7 +257,7 @@
 
       /* 登录弹窗 */
       "login.title": "Tinttex へようこそ",
-      "login.sub": "ログインして、ガウシアンスプラッティングの新しい体験を。",
+      "login.sub": "ログインして、1:1で再現された佛山のショールームを続けて散策。気になるアイテムを保存して、自宅で確かめてから迎えましょう。",
       "login.emailPh": "メールアドレス",
       "login.pwPh": "パスワード",
       "login.forgot": "パスワードをお忘れですか？",
@@ -282,11 +271,10 @@
 
       /* 注册弹窗 */
       "signup.title": "Tinttex へようこそ",
-      "signup.sub": "無料登録で、ガウシアンスプラッティングの新しい体験を。",
+      "signup.sub": "無料登録で、気に入った空間をマイプランに保存。自分の家に置いて確かめてから注文できます。",
       "signup.emailPh": "メールアドレスを入力",
       "signup.pwPh": "パスワードを作成",
       "signup.hint": "英字・数字・記号を含む8文字以上で設定してください",
-      "signup.birthPh": "生年月日（mm/dd/yyyy）",
       "signup.submit": "続行",
       "signup.meta1Pre": "アカウントをお持ちの方は",
       "signup.meta1Link": "ログイン",
@@ -341,16 +329,13 @@
       "foot.explore": "Explore",
       "foot.shop": "Shop",
       "foot.help": "Help Center",
-      "foot.policies": "Policies",
-      "foot.terms": "Terms of service",
-      "foot.privacy": "Privacy policy",
-      "foot.nonuser": "Non-user notice",
-
       /* Footer bar */
       "foot.copy": "© 2026 Tinttex · All rights reserved",
       "foot.legal": "Legal",
       "foot.cookie": "Privacy & Cookie Policy",
       "aria.wechat": "WeChat",
+      "aria.alipay": "Alipay",
+      "aria.douyin": "Douyin",
       "aria.bili": "Bilibili",
       "aria.x": "X (Twitter)",
       "aria.mail": "Email",
@@ -366,7 +351,7 @@
 
       /* Login modal */
       "login.title": "Welcome to Tinttex",
-      "login.sub": "Log in to see what Gaussian Splatting can do for you.",
+      "login.sub": "Log in to keep exploring the Foshan showroom recreated 1:1 — save the pieces you love and preview them at home before you buy.",
       "login.emailPh": "Email address",
       "login.pwPh": "Password",
       "login.forgot": "Forgot your password?",
@@ -380,11 +365,10 @@
 
       /* Signup modal */
       "signup.title": "Welcome to Tinttex",
-      "signup.sub": "Sign up for free to see what Gaussian Splatting can do for you.",
+      "signup.sub": "Sign up free to turn the inspiration you find into plans — place pieces in your own home, preview the look, then order.",
       "signup.emailPh": "Enter your email address",
       "signup.pwPh": "Create a password",
       "signup.hint": "Use at least 8 characters, including letters, numbers, and symbols.",
-      "signup.birthPh": "Birthday (mm/dd/yyyy)",
       "signup.submit": "Continue",
       "signup.meta1Pre": "Already have an account?",
       "signup.meta1Link": "Log in",
