@@ -5,6 +5,60 @@
 
 ---
 
+## 快速开始 · 拉取代码（含国内 Git 镜像加速）
+
+> **仓库是公开的（Public），clone 无需任何账号/凭据。** 下面命令可直接跑；国内网络慢就选带镜像的那条。
+
+**仓库地址（canonical）**
+
+```
+https://github.com/billye220670/TinttexSiteUIUXDemo.git
+```
+
+**① 网络正常 → 直接拉**
+
+```bash
+git clone https://github.com/billye220670/TinttexSiteUIUXDemo.git
+cd TinttexSiteUIUXDemo
+```
+
+**② 国内加速（三选一，任选一条能通的即可）**
+
+- **A. 一次性全局换源（推荐；之后所有 github clone 自动加速）**
+  ```bash
+  git config --global url."https://gitclone.com/".insteadOf "https://github.com/"
+  git clone https://github.com/billye220670/TinttexSiteUIUXDemo.git   # 自动走镜像
+  # 用完想还原：
+  git config --global --unset url."https://gitclone.com/".insteadOf
+  ```
+- **B. 单次用镜像域名（不改全局配置）**
+  ```bash
+  git clone https://gitclone.com/github.com/billye220670/TinttexSiteUIUXDemo.git
+  # 或： git clone https://kkgithub.com/billye220670/TinttexSiteUIUXDemo.git
+  ```
+- **C. URL 前缀代理（ghproxy 系）**
+  ```bash
+  git clone https://mirror.ghproxy.com/https://github.com/billye220670/TinttexSiteUIUXDemo.git
+  # 若该域名失效，换： https://gh-proxy.com/  或  https://ghproxy.net/  或  https://ghfast.top/
+  ```
+
+> ⚠️ **镜像注意事项**
+> - 这些都是**社区公益代理、非 GitHub 官方**，域名可能随时调整或下线；一条不通就换下一条，或退回 ① 直连。可先 `curl -I <镜像域名>` 探测连通性。
+> - 本仓库是公开的，走镜像安全。但**通用铁律**：**私有仓库 / 带 token 的请求绝不要走第三方镜像**（凭据可能泄露）——本项目不涉及，仅提醒。
+
+**③ 拉下来之后（可选：跑起前端看效果）**
+
+```bash
+npm install          # 国内慢可先换源： npm config set registry https://registry.npmmirror.com
+npm run dev          # Vite，默认 http://localhost:5173
+```
+> 照片墙依赖 CDN（esm.sh）联网加载 React；国内若 esm.sh 慢，照片墙可能退回静态兜底网格，属正常现象，不影响对接工作。
+
+**④ Agent 从这里接手**
+代码拉到本地后，接手的 AI Agent 请**从下面的 §0 开始**，按「读懂前端 → 先调查你自己的后端库 → 只就剩余项澄清 → 实现」四阶段推进。本文档 `BACKEND_HANDOVER.md` 就在仓库根目录。
+
+---
+
 ## 0. 给接手的 AI Agent 的工作指令（请先读这一段）
 
 你（AI Agent）正在协助开发者为这个纯前端落地页对接后端。**请严格按下面 4 个阶段推进；不要跳步，阶段 3 未落定前不要写任何业务代码。**
