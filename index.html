@@ -51,27 +51,23 @@
       <!-- <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas> -->
       <!-- 标题组：主/副标题同组定位与动效（main.js 驱动整组 blur/scale/opacity）；组内正常文档流，英文长文案折行时副标题自动跟随 -->
       <div class="hero-copy">
-        <h1 class="hero-title" data-i18n="hero.title">逛一逛，摆一摆。</h1>
+        <!-- data-i18n 放在内层 span：竖屏中文要隐藏带标点原文改用伪元素双行，i18n 替换不能毁掉外层结构 -->
+        <h1 class="hero-title"><span data-i18n="hero.title">逛一逛，摆一摆。</span></h1>
         <p class="hero-sub" data-i18n="hero.sub">佛山展厅一比一还原，沉浸逛展，线上搭配，AI客服全程陪跑。</p>
-        <!-- 手机竖屏专属：白色圆角副标题轮播条（非竖屏 display:none）。
-             首条复用 hero.sub 键与原副标题同源（i18n 同步），后续为补充卖点；
-             末条是首条的复制品（同 key）→ 上浮到它后瞬时归零，实现无缝循环。 -->
-        <div class="hero-ticker" aria-hidden="true">
-          <div class="hero-ticker-track">
-            <span class="hero-ticker-item" data-i18n="hero.sub">佛山展厅一比一还原，沉浸逛展，线上搭配，AI客服全程陪跑。</span>
-            <span class="hero-ticker-item" data-i18n="hero.tick1">海量单品，摆进真实场景看效果</span>
-            <span class="hero-ticker-item" data-i18n="hero.tick2">所见即所得，真实货品直达家中</span>
-            <span class="hero-ticker-item" data-i18n="hero.sub">佛山展厅一比一还原，沉浸逛展，线上搭配，AI客服全程陪跑。</span>
-          </div>
-        </div>
+        <!-- 卖点轮播胶囊（所有端显示，接替副标题）：纯 CSS keyframes 垂直轮播（每 1.5s 下一条自下方浮入顶走当前）；
+             末条是首条的复制品（同 key）→ 循环点平移量落在复制品上，回跳起点视觉无缝。
+             胶囊本身是 button：点击接替原「探索更多」CTA 的跳转（main.js 吸附到瀑布流标语）；
+             滚动文案对读屏隐藏，按钮 aria-label 走 cta.more。 -->
+        <button type="button" class="hero-ticker" data-i18n-aria="cta.more">
+          <span class="hero-ticker-track" aria-hidden="true">
+            <span class="hero-ticker-item" data-i18n="hero.tick1">佛山展厅1:1还原</span>
+            <span class="hero-ticker-item" data-i18n="hero.tick2">沉浸逛展</span>
+            <span class="hero-ticker-item" data-i18n="hero.tick3">线上搭配</span>
+            <span class="hero-ticker-item" data-i18n="hero.tick4">AI客服全程陪跑</span>
+            <span class="hero-ticker-item" data-i18n="hero.tick1">佛山展厅1:1还原</span>
+          </span>
+        </button>
       </div>
-    </div>
-    <!-- 探索更多 CTA：fixed 固定在视口，随标题一起模糊渐隐（main.js 驱动） -->
-    <div class="feed-cta">
-      <a class="pill-btn" href="#feedWall">
-        <span data-i18n="cta.more">探索更多</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h17M15 6l6 6-6 6"/></svg>
-      </a>
     </div>
   </section>
 

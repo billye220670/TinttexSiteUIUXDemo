@@ -141,7 +141,6 @@
   var hero = document.querySelector(".hero");
   var heroPin = document.querySelector(".hero-pin");
   var heroCopy = document.querySelector(".hero-copy");
-  var feedCta = document.querySelector(".feed-cta");
   var heroVeil = document.querySelector(".hero-veil");
   var navEl = document.querySelector(".nav");
   if (hero && heroVideo) {
@@ -153,7 +152,6 @@
       // —— 标题消隐：末态（两模式共用）——
       TITLE_MAX_BLUR: 32,       // 末态模糊半径 px
       TITLE_MAX_SCALE: 1.62,    // 末态放大倍率（模拟向镜头移近）
-      CTA_MAX_BLUR: 28,         // “探索更多”CTA 末态模糊 px
       // —— 标题消隐：插值模式（interp）——
       TITLE_START: 0,           // 开始模糊的 p
       TITLE_BLUR_RAMP: 0.22,    // 模糊/放大拉满的 p 跨度
@@ -273,16 +271,12 @@
         titleS = blurT; titleTarget = blurT > 0.5 ? 1 : 0;   // 同步，切到 state 时无跳变
       }
       if (heroCopy) {
-        // 整个标题组（主标题+副标题）同节奏模糊渐隐/放大
-        heroCopy.style.transform = "translate(-50%, 0) scale(" + (1 + (TUNE.TITLE_MAX_SCALE - 1) * blurT).toFixed(3) + ")";
+        // 整个标题组（主标题+副标题）同节奏模糊渐隐/放大；居中由 CSS 布局保证，这里只写 scale
+        heroCopy.style.transform = "scale(" + (1 + (TUNE.TITLE_MAX_SCALE - 1) * blurT).toFixed(3) + ")";
         heroCopy.style.filter = "blur(" + (TUNE.TITLE_MAX_BLUR * blurT).toFixed(2) + "px)";
         heroCopy.style.opacity = (1 - opacT).toFixed(3);
-        // “探索更多” CTA 与标题同节奏；完全消失后 visibility:hidden 断掉 fixed 元素的点击
-        if (feedCta) {
-          feedCta.style.filter = "blur(" + (TUNE.CTA_MAX_BLUR * blurT).toFixed(2) + "px)";
-          feedCta.style.opacity = (1 - opacT).toFixed(3);
-          feedCta.style.visibility = opacT >= 1 ? "hidden" : "visible";
-        }
+        // 完全淡出后 visibility:hidden 断掉标题组内轮播胶囊的点击（不可见但仍会命中）
+        heroCopy.style.visibility = opacT >= 1 ? "hidden" : "visible";
       }
 
       /* ---- 瀑布流盖上：sF → translateY(-sF*FEED_COVER) 向上盖到顶，两种模式末态一致 ---- */
@@ -423,14 +417,12 @@
     // 卡片介绍区（stage1）→ 瀑布流（stage2）之间不做吸附/接管处理：自由滚动。
     // 强制停点只剩「页顶 ↔ showcase 标题贴顶」这一段（触屏在 touchend 里处理）。
 
-    // —— “探索更多”CTA：精准定位到瀑布流标语（feed-head 贴视口顶）——
-    // 原实现是 <a href="#feedWall"> 锚点跳转，会落到瀑布流版式中段（且不经过覆盖动画）；
-    // 改为复用吸附动画滚到 wallAnchorY（与 state 3 的落点完全一致），所有端一致。
-    // 保留 href 作无 JS 兜底；动画期间再点击由 startSnap 重入（从当前位置重开一段）。
-    var ctaLink = document.querySelector(".feed-cta a");
-    if (ctaLink) {
-      ctaLink.addEventListener("click", function (e) {
-        e.preventDefault();
+    // —— 轮播胶囊点击：接替原「探索更多」CTA 的跳转（精准定位到瀑布流标语，feed-head 贴视口顶）——
+    // 复用吸附动画滚到 wallAnchorY（与 state 3 的落点完全一致），所有端一致；
+    // 动画期间再点击由 startSnap 重入（从当前位置重开一段）。
+    var tickerBtn = document.querySelector(".hero-ticker");
+    if (tickerBtn) {
+      tickerBtn.addEventListener("click", function () {
         if (reduceMotion) { window.scrollTo(0, wallAnchorY()); return; }
         startSnap(wallAnchorY());
       });
@@ -599,46 +591,6 @@
         }
       });
     }
-  }
-
-  /* ======== 手机竖屏副标题轮播条：白色圆角内多条副标上浮顶替（非竖屏不启动）========
-   * 末条是首条的复制品 → 滚到末条后瞬时归零，实现无缝循环；
-   * i18n 切语言后文本被字典替换，条目高度定高（CSS 46px），无需重新测量。 */
-  var ticker = document.querySelector(".hero-ticker");
-  if (ticker) {
-    var tickerMq = window.matchMedia("(max-width: 560px) and (orientation: portrait)");
-    var tickerTrack = ticker.querySelector(".hero-ticker-track");
-    var tickerTimer = null, tickerIdx = 0;
-    var tickerStop = function () {
-      if (tickerTimer) { clearInterval(tickerTimer); tickerTimer = null; }
-    };
-    var tickerStart = function () {
-      tickerStop();
-      if (!tickerTrack || !tickerMq.matches || !tickerTrack.children.length) return;
-      var itemH = tickerTrack.children[0].offsetHeight || 46;
-      tickerIdx = 0;
-      tickerTrack.style.transition = "none";
-      tickerTrack.style.transform = "translateY(0)";
-      tickerTimer = setInterval(function () {
-        var n = tickerTrack.children.length;
-        if (n < 2) return;
-        tickerIdx = (tickerIdx + 1) % n;
-        tickerTrack.style.transition = "transform 0.6s cubic-bezier(0.22, 0.61, 0.21, 1)";
-        tickerTrack.style.transform = "translateY(-" + (tickerIdx * itemH) + "px)";   // 上浮：新条自下方顶入
-        if (tickerIdx === n - 1) {   // 已到末条（首条复制品）→ 过渡结束后瞬时归零
-          setTimeout(function () {
-            tickerTrack.style.transition = "none";
-            tickerTrack.style.transform = "translateY(0)";
-            tickerIdx = 0;
-          }, 650);
-        }
-      }, 3600);
-    };
-    tickerMq.addEventListener("change", tickerStart);   // 旋转/折叠开合时启停
-    document.addEventListener("visibilitychange", function () {
-      if (document.hidden) tickerStop(); else tickerStart();   // 页签隐藏暂停，避免空转
-    });
-    tickerStart();
   }
 
   /* ======== Showreel 播放 / 暂停 ======== */

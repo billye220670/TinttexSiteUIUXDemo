@@ -30,7 +30,6 @@
     { g: "标题消隐 · 末态（两模式共用）" },
     { k: "TITLE_MAX_BLUR", label: "最大模糊px", min: 0, max: 60, step: 1 },
     { k: "TITLE_MAX_SCALE", label: "最大放大", min: 1, max: 2.5, step: 0.01 },
-    { k: "CTA_MAX_BLUR", label: "CTA模糊px", min: 0, max: 40, step: 1 },
 
     { g: "标题消隐 · 插值模式 (interp)" },
     { k: "TITLE_START", label: "起始 p", min: 0, max: 1, step: 0.01 },

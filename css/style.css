@@ -21,6 +21,11 @@
 :root[lang="en"]    { --card-cta: "Step In"; }
 :root[lang="ja"]    { --card-cta: "今すぐ見る"; }
 
+/* 主标题竖屏双行版（去逗号/句号）：竖屏中文隐藏带标点原文，改由伪元素输出两行无标点文案；
+   简中为默认值，繁中在 :root[lang] 处覆盖 */
+:root, :root[lang="zh-CN"] { --ht-l1: "逛一逛"; --ht-l2: "摆一摆"; }
+:root[lang="zh-TW"] { --ht-l1: "逛一逛"; --ht-l2: "擺一擺"; }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
@@ -366,7 +371,8 @@ button.field-icon:hover { background: rgba(0, 0, 0, 0.06); }
 .hero-copy {
   position: absolute;
   top: 38%;   /* 中文单行标题的基准位 */
-  left: 50%; transform: translateX(-50%);
+  left: 0; right: 0;
+  margin-inline: auto;   /* 永远左右居中：由布局保证，不依赖 shrink-to-fit 或 JS transform */
   max-width: min(92vw, 1100px);
   text-align: center;
   user-select: none;
@@ -393,90 +399,87 @@ html[lang="ja"] .hero-title {
   line-height: 1.18;
 }
 
-/* 英文/日文标题会折成两行、整组更高：上移到 28%，避开底部 32% 处的 “Explore more/もっと見る” CTA；中文单行保持 38% 不过分靠上 */
-html[lang="en"] .hero-copy,
-html[lang="ja"] .hero-copy {
-  top: 28%;
-}
-
 /* 日文排版禁则：标点（。、ー 等）不落行首、单词不从中间断开；
    日文本身不用字间距，去掉中文向的 tracking 让假名/汉字排版自然 */
-html[lang="ja"] .hero-title,
-html[lang="ja"] .hero-sub {
+html[lang="ja"] .hero-title {
   line-break: strict;
   word-break: normal;
   overflow-wrap: break-word;
-}
-html[lang="ja"] .hero-title { letter-spacing: 0.02em; }
-html[lang="ja"] .hero-sub { letter-spacing: 0.04em; }
-
-/* 手机竖屏：日/英文案折行多、副标长 → 标题组再上移 + CTA 下移，
-   拉开底部文本与 explore 按钮的距离，避免 overlap（中文单行只需 CTA 下移即可） */
-@media (max-width: 560px) and (orientation: portrait) {
-  .feed-cta { bottom: 22%; }   /* CTA 从 32% 下移到 22%，远离上方文本 */
-  html[lang="en"] .hero-copy,
-  html[lang="ja"] .hero-copy { top: 17%; }
-  html[lang="en"] .hero-sub,
-  html[lang="ja"] .hero-sub { margin-top: 16px; max-width: 86vw; margin-inline: auto; }
+  letter-spacing: 0.02em;
 }
 
-/* 副标题：随文档流跟在主标题下方；加轻微投影提升在明亮视频画面上的可读性 */
+/* 副标题：所有端视觉隐藏但保留给读屏/i18n（视觉由轮播胶囊接替） */
 .hero-sub {
-  margin: 26px 0 0;
-  font-size: clamp(14px, 1.3vw, 19px);
-  font-weight: 400;
-  letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.78);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 2px 16px rgba(0, 0, 0, 0.35);
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  clip: rect(0 0 0 0);
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-/* ======== 手机竖屏副标题轮播条（白色圆角，多条副标上浮顶替轮播） ========
-   非竖屏 display:none；竖屏下原 hero-sub 转为 sr-only（读屏/i18n 保留，视觉由轮播条接替）。 */
+/* ======== 卖点轮播胶囊（所有端，接替副标题 + 原「探索更多」跳转） ========
+   短卖点强制单行（nowrap）+ 胶囊收缩到最宽一条（fit-content）→ 内容不随屏宽折行、轮播中宽度稳定；
+   轮播为纯 CSS keyframes：4 条 × 1.5s（停 1.1s + 上浮 0.4s），末条是首条复制品 →
+   循环点平移 -4 格正好落在复制品上，回跳起点视觉无缝，无需 JS 计时/测量。
+   胶囊是 button：点击吸附到瀑布流标语（main.js）；hover/active 给轻反馈。 */
 .hero-ticker {
-  display: none;
+  display: block;
   margin: 18px auto 0;
-  max-width: 86vw;
+  width: fit-content;
+  height: 44px;                     /* 单条定高：视口内永远只露一条 */
+  border: 0; padding: 0;            /* button reset */
+  font-family: inherit;
+  cursor: pointer;
   background: #fff;
   border-radius: 999px;
   overflow: hidden;
   box-shadow: 0 8px 26px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
 }
+.hero-ticker:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38); }
+.hero-ticker:active { transform: translateY(0) scale(0.97); }
+.hero-ticker:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .hero-ticker-track {
   display: flex;
   flex-direction: column;
   will-change: transform;
+  animation: hero-ticker-roll 6s infinite;
 }
 .hero-ticker-item {
   flex: none;
-  height: 46px;                     /* 定高：轮播位移按此项高度计算，条内多行也够容 */
+  height: 44px;                     /* 与容器同高：上浮位移每步正好一条 */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 18px;
+  padding: 0 22px;
+  white-space: nowrap;              /* 短句单行：内容与屏宽解耦 */
   color: #1a1a1a;
   font-size: 12.5px;
   font-weight: 500;
   letter-spacing: 0.04em;
-  line-height: 1.4;
-  text-align: center;
+}
+/* 上浮节奏：每 25%（1.5s）内前 18.33%（1.1s）静止停留，余下 0.4s  ease 上浮一条高（44px）；
+   缓动写在停留段末关键帧上 = 作用于到下一关键帧的上浮区间；100% 落在首条复制品，与循环重启的 0% 视觉一致 */
+@keyframes hero-ticker-roll {
+  0%, 18.33% { transform: translateY(0); animation-timing-function: cubic-bezier(0.22, 0.61, 0.21, 1); }
+  25%, 43.33% { transform: translateY(-44px); animation-timing-function: cubic-bezier(0.22, 0.61, 0.21, 1); }
+  50%, 68.33% { transform: translateY(-88px); animation-timing-function: cubic-bezier(0.22, 0.61, 0.21, 1); }
+  75%, 93.33% { transform: translateY(-132px); animation-timing-function: cubic-bezier(0.22, 0.61, 0.21, 1); }
+  100% { transform: translateY(-176px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-ticker-track { animation: none; }   /* 减弱动效偏好：停在首条不轮播 */
 }
 @media (max-width: 560px) and (orientation: portrait) {
-  .hero-ticker { display: block; }
-  /* 中文主标题在竖屏下拆两行：限宽 ≈ 四字（含逗号）宽，逗号后自然断行 → “逛一逛，/ 摆一摆。” */
-  html[lang="zh-CN"] .hero-title,
-  html[lang="zh-TW"] .hero-title {
-    max-width: 4.4em;
-    margin-inline: auto;
-  }
-  /* 原副标视觉隐藏但保留给读屏/i18n（轮播条首条与它同源） */
-  .hero-sub {
-    position: absolute;
-    width: 1px; height: 1px;
-    margin: -1px; padding: 0; border: 0;
-    clip: rect(0 0 0 0);
-    overflow: hidden;
-    white-space: nowrap;
-  }
+  /* 中文主标题竖屏双行且不带标点：隐藏带标点的原文 span，
+     由 ::before/::after 各出一行无标点文案（块级自然成两行，text-align:center 保持居中） */
+  html[lang="zh-CN"] .hero-title > span,
+  html[lang="zh-TW"] .hero-title > span { display: none; }
+  html[lang="zh-CN"] .hero-title::before,
+  html[lang="zh-TW"] .hero-title::before { content: var(--ht-l1); display: block; }
+  html[lang="zh-CN"] .hero-title::after,
+  html[lang="zh-TW"] .hero-title::after { content: var(--ht-l2); display: block; }
 }
 
 /* ======== 圆形箭头按钮 ======== */
@@ -511,17 +514,6 @@ html[lang="ja"] .hero-sub { letter-spacing: 0.04em; }
 .link-more > span:first-child { transition: opacity 0.3s; }
 .link-more:hover > span:first-child { opacity: 0.65; }
 .link-more:hover .circle-btn { transform: translateX(4px); }
-
-/* ======== 探索更多 CTA（fixed 固定在视口，与标题同步模糊渐隐，完全消失后 visibility:hidden 断掉点击） ======== */
-.feed-cta {
-  position: fixed;
-  left: 0; right: 0;
-  bottom: 32%;
-  display: flex;
-  justify-content: center;
-  z-index: 40;
-  will-change: opacity, filter;
-}
 
 /* 细边框圆角矩形按钮（与 .circle-btn 同族边框/反色 hover，但为矩形 + 文字） */
 .pill-btn {
@@ -1016,7 +1008,6 @@ html[lang="ja"] .hero-sub { letter-spacing: 0.04em; }
   .hero { height: 180vh; }   /* 移动端压缩钉住距离（80vh），视频末帧仍接 pin 释放无 hold */
   .hero-pin { min-height: 420px; }
   .hero-title { font-size: clamp(34px, 10vw, 56px); }
-  .hero-sub  { font-size: 13px; letter-spacing: 0.1em; }
   .feed { margin-top: 0; }   /* 移动端与桌面一致（面板 inline style 会覆盖） */
 
   .section-grid { grid-template-columns: 1fr; gap: 20px; }

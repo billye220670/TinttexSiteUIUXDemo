@@ -13,8 +13,10 @@
       "hero.title": "逛一逛，摆一摆。",
       "hero.sub": "佛山展厅一比一还原，沉浸逛展，线上搭配，AI客服全程陪跑。",
       "cta.more": "探索更多",
-      "hero.tick1": "海量单品，摆进真实场景看效果",
-      "hero.tick2": "所见即所得，真实货品直达家中",
+      "hero.tick1": "佛山展厅1:1还原",
+      "hero.tick2": "沉浸逛展",
+      "hero.tick3": "线上搭配",
+      "hero.tick4": "AI客服全程陪跑",
       "aria.feed": "高斯泼溅场景瀑布流",
 
       /* 瀑布流顶部·功能导览板块（showcase） */
@@ -104,8 +106,10 @@
       "hero.title": "逛一逛，擺一擺。",
       "hero.sub": "佛山展廳一比一還原，沉浸逛展，線上搭配，AI客服全程陪跑。",
       "cta.more": "探索更多",
-      "hero.tick1": "海量單品，擺進真實場景看效果",
-      "hero.tick2": "所見即所得，真實貨品直達家中",
+      "hero.tick1": "佛山展廳1:1還原",
+      "hero.tick2": "沉浸逛展",
+      "hero.tick3": "線上搭配",
+      "hero.tick4": "AI客服全程陪跑",
       "aria.feed": "高斯潑濺場景瀑布流",
 
       /* 瀑布流顶部·功能导览板块（showcase） */
@@ -200,8 +204,10 @@
       "hero.title": "見て回る、飾ってみる。",
       "hero.sub": "佛山のショールームを1:1で再現。没入感のあるショールーム体験、オンラインコーディネート、AIスタッフが最後まで伴走します",
       "cta.more": "もっと見る",
-      "hero.tick1": "豊富なアイテムを実際の空間に配置して確認",
-      "hero.tick2": "見たままが、そのまま自宅へ届く",
+      "hero.tick1": "佛山ショールームを1:1再現",
+      "hero.tick2": "没入型の展示体験",
+      "hero.tick3": "オンラインでコーディネート",
+      "hero.tick4": "AIスタッフが最後まで伴走",
       "aria.feed": "ガウシアンスプラッティングシーンギャラリー",
 
       /* 瀑布流顶部・機能案内セクション（showcase） */
@@ -298,8 +304,10 @@
       "hero.title": "Browse\u00A0it. Place\u00A0it.",   /* \u00A0 不换行空格：Browse it. / Place it. 各自锁一行，只在句子间断行 */
       "hero.sub": "From Foshan to your home: explore our showroom in true-to-life 3D, style it online, and shop with AI support every step of the way.",
       "cta.more": "Explore more",
-      "hero.tick1": "Place real items in real scenes, instantly",
-      "hero.tick2": "What you see is what arrives at home",
+      "hero.tick1": "Foshan showroom recreated 1:1",
+      "hero.tick2": "Immersive showroom tours",
+      "hero.tick3": "Style it online",
+      "hero.tick4": "AI support every step of the way",
       "aria.feed": "Gaussian splat scene gallery",
 
       /* Showcase (top of feed) */
