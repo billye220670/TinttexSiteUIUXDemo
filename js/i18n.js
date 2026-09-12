@@ -13,7 +13,34 @@
       "hero.title": "逛一逛，摆一摆。",
       "hero.sub": "佛山展厅一比一还原，沉浸逛展，线上搭配，AI客服全程陪跑。",
       "cta.more": "探索更多",
+      "hero.tick1": "海量单品，摆进真实场景看效果",
+      "hero.tick2": "所见即所得，真实货品直达家中",
       "aria.feed": "高斯泼溅场景瀑布流",
+
+      /* 瀑布流顶部·功能导览板块（showcase） */
+      "sc.title": "让心爱的灵感落地成真",
+      "sc.sub": "在 Tinttex，用激发创造力的工具，发现更多空间灵感。",
+      "sc.chatUser": "帮我找这把椅子",
+      "sc.chatAi": "已找到 3 件同款",
+      "sc.chatHint": "点击查看产品信息",
+      "sc.product": "北欧布艺单人椅 · ¥899",
+      "sc.drag": "拖拽摆放",
+      "sc.plan": "我的客厅方案",
+      "sc.planMeta": "28 件单品 · 秒出渲染",
+      "sc.rend": "Tinttex 渲染",
+      "sc.real": "到家实拍",
+      "sc.order": "一键下单 · 直达家中",
+      "sc.t1h": "先逛空间，再挑好物",
+      "sc.t1p": "在 1:1 还原的真实场景里漫游，AI 导航边逛边聊，看中的家具随手即出产品信息。",
+      "sc.t2h": "海量单品，摆上就能看",
+      "sc.t2p": "问 AI 就能找到想要的货品，拖进场景摆好，秒出照片级渲染。",
+      "sc.t3h": "所见即所得，一键到家",
+      "sc.t3p": "渲染里什么样，家里就什么样——下单后真实货品直达家中一角。",
+      "sc.cta": "了解更多",
+
+      /* 瀑布流章节标语（state 3 落位点） */
+      "fh.title": "每张图，都是能走进的展厅",
+      "fh.sub": "精选场景 1:1 还原真实空间，点开任意一张，即可沉浸漫游。",
 
       "foot.app": "Get the app",
       "foot.quick": "Quick links",
@@ -73,10 +100,38 @@
       /* 导航 & Hero & CTA */
       "nav.login": "登入",
       "nav.signup": "註冊",
+      "card.cta": "立即進入",
       "hero.title": "逛一逛，擺一擺。",
       "hero.sub": "佛山展廳一比一還原，沉浸逛展，線上搭配，AI客服全程陪跑。",
       "cta.more": "探索更多",
+      "hero.tick1": "海量單品，擺進真實場景看效果",
+      "hero.tick2": "所見即所得，真實貨品直達家中",
       "aria.feed": "高斯潑濺場景瀑布流",
+
+      /* 瀑布流顶部·功能导览板块（showcase） */
+      "sc.title": "讓心愛的靈感落地成真",
+      "sc.sub": "在 Tinttex，用激發創造力的工具，發現更多空間靈感。",
+      "sc.chatUser": "幫我找這把椅子",
+      "sc.chatAi": "已找到 3 件同款",
+      "sc.chatHint": "點擊查看產品資訊",
+      "sc.product": "北歐布藝單人椅 · ¥899",
+      "sc.drag": "拖曳擺放",
+      "sc.plan": "我的客廳方案",
+      "sc.planMeta": "28 件單品 · 秒出渲染",
+      "sc.rend": "Tinttex 渲染",
+      "sc.real": "到家實拍",
+      "sc.order": "一鍵下單 · 直達家中",
+      "sc.t1h": "先逛空間，再挑好物",
+      "sc.t1p": "在 1:1 還原的真實場景裡漫遊，AI 導航邊逛邊聊，看中的傢俱隨手即出產品資訊。",
+      "sc.t2h": "海量單品，擺上就能看",
+      "sc.t2p": "問 AI 就能找到想要的貨品，拖進場景擺好，秒出照片級渲染。",
+      "sc.t3h": "所見即所得，一鍵到家",
+      "sc.t3p": "渲染裡什麼樣，家裡就什麼樣——下單後真實貨品直達家中一角。",
+      "sc.cta": "了解更多",
+
+      /* 瀑布流章节标语（state 3 落位点） */
+      "fh.title": "每張圖，都是能走進的展廳",
+      "fh.sub": "精選場景 1:1 還原真實空間，點開任意一張，即可沉浸漫遊。",
 
       /* 页脚链接区 */
       "foot.app": "取得應用程式",
@@ -141,10 +196,38 @@
       /* 导航 & Hero & CTA */
       "nav.login": "ログイン",
       "nav.signup": "会員登録",
+      "card.cta": "今すぐ見る",
       "hero.title": "見て回る、飾ってみる。",
       "hero.sub": "佛山のショールームを1:1で再現。没入感のあるショールーム体験、オンラインコーディネート、AIスタッフが最後まで伴走します",
       "cta.more": "もっと見る",
+      "hero.tick1": "豊富なアイテムを実際の空間に配置して確認",
+      "hero.tick2": "見たままが、そのまま自宅へ届く",
       "aria.feed": "ガウシアンスプラッティングシーンギャラリー",
+
+      /* 瀑布流顶部・機能案内セクション（showcase） */
+      "sc.title": "お気に入りのアイデアを形にする",
+      "sc.sub": "Tinttex で、創造力を刺激するツールを使い、空間のインスピレーションをもっと見つけましょう。",
+      "sc.chatUser": "この椅子を探して",
+      "sc.chatAi": "似た商品が3件見つかりました",
+      "sc.chatHint": "タップで製品情報",
+      "sc.product": "北欧ファブリックアームチェア · ¥899",
+      "sc.drag": "ドラッグで配置",
+      "sc.plan": "マイリビングプラン",
+      "sc.planMeta": "28アイテム · すぐにレンダリング",
+      "sc.rend": "Tinttex レンダリング",
+      "sc.real": "届いた実物",
+      "sc.order": "ワンタップ注文 · そのままお部屋へ",
+      "sc.t1h": "まず空間を回遊、そのあとで選ぶ",
+      "sc.t1p": "1:1で再現されたリアルな空間を歩き回り、AIナビと会話しながら、気になった家具の製品情報をすぐチェック。",
+      "sc.t2h": "豊富な商品、置けばすぐ見える",
+      "sc.t2p": "AIに聞けば欲しい商品が見つかり、ドラッグして配置すれば、瞬時にフォトリアルなレンダリングに。",
+      "sc.t3h": "見たままが、そのまま届く",
+      "sc.t3p": "レンダリング通りの仕上がり——注文すれば本物の商品が自宅の一角へ届きます。",
+      "sc.cta": "詳しく見る",
+
+      /* 瀑布流セクション見出し（state 3 着地点） */
+      "fh.title": "どの一枚も、歩いて入れるショールーム",
+      "fh.sub": "厳選シーンを1:1で再現。クリックするだけで、その空間を散策できます。",
 
       /* 页脚链接区 */
       "foot.app": "アプリを入手",
@@ -211,10 +294,38 @@
       /* Nav & Hero & CTA */
       "nav.login": "Log in",
       "nav.signup": "Sign up",
+      "card.cta": "Step In",
       "hero.title": "Browse\u00A0it. Place\u00A0it.",   /* \u00A0 不换行空格：Browse it. / Place it. 各自锁一行，只在句子间断行 */
       "hero.sub": "From Foshan to your home: explore our showroom in true-to-life 3D, style it online, and shop with AI support every step of the way.",
       "cta.more": "Explore more",
+      "hero.tick1": "Place real items in real scenes, instantly",
+      "hero.tick2": "What you see is what arrives at home",
       "aria.feed": "Gaussian splat scene gallery",
+
+      /* Showcase (top of feed) */
+      "sc.title": "Bring your favorite ideas to life",
+      "sc.sub": "With Tinttex, unlock tools that spark your creativity and help you find more inspiration.",
+      "sc.chatUser": "Find this chair for me",
+      "sc.chatAi": "Found 3 matching items",
+      "sc.chatHint": "Tap for product info",
+      "sc.product": "Nordic fabric armchair · $129",
+      "sc.drag": "Drag & drop",
+      "sc.plan": "My living room plan",
+      "sc.planMeta": "28 items · instant render",
+      "sc.rend": "Tinttex render",
+      "sc.real": "At home",
+      "sc.order": "One-tap order · straight to your home",
+      "sc.t1h": "Walk the space first, then shop",
+      "sc.t1p": "Roam a true-to-life 1:1 scene, chat with the AI guide, and get product info for any piece you like.",
+      "sc.t2h": "A huge catalog, seen in place",
+      "sc.t2p": "Ask the AI to find any item, drag it into your scene, and get a photo-real render in seconds.",
+      "sc.t3h": "What you see is what arrives",
+      "sc.t3p": "Your render is your room—order once and the real items land right at home.",
+      "sc.cta": "Learn more",
+
+      /* Feed section headline (state 3 anchor) */
+      "fh.title": "Every image is a showroom you can walk into",
+      "fh.sub": "Curated scenes rebuilt 1:1 in true-to-life 3D — click any of them to step inside.",
 
       /* Footer nav */
       "foot.app": "Get the app",

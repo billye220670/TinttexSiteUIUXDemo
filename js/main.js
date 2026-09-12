@@ -97,6 +97,7 @@
   var heroVideo = document.querySelector(".hero-video");
   if (heroVideo) {
     // 不自动播放：确保暂停并归零，静止在第一帧（等待滚动 scrub）
+    heroVideo.muted = true;   // 属性 + property 双保险（个别移动端只认 property，静音是免手势播放的前提）
     heroVideo.pause();
     var holdFirstFrame = function () {
       try { heroVideo.currentTime = 0; } catch (e) {}
@@ -104,6 +105,29 @@
     };
     if (heroVideo.readyState >= 1) holdFirstFrame();
     else heroVideo.addEventListener("loadedmetadata", holdFirstFrame);
+
+    // —— 移动端首帧解码“踢”：iOS/Android 上从未播放过的 paused 视频不渲染任何画面（黑屏），
+    //    且移动端可能忽略 preload="auto"（不主动加载数据）。
+    //    注意必须立即踢、不能等 loadeddata：数据不加载 → loadeddata 永不触发 → play 永不被调 → 死锁。
+    //    muted+playsinline 视频允许无手势自动播放，play() 本身会触发数据加载，
+    //    promise resolve 后立即 pause 归零，交还 scrub 控制。
+    //    低电量模式等 play() 被拒时，退回首次触摸手势再试（kicked 未置位，可重入）。
+    var kicked = false;
+    var kickDecode = function () {
+      if (kicked) return;
+      var pr = heroVideo.play();
+      if (pr && pr.then) {
+        pr.then(function () {
+          kicked = true;
+          heroVideo.pause();
+          holdFirstFrame();   // 归零回第一帧，交还 scrub 控制
+        }).catch(function () {});   // 被拦截：静默失败，等触摸手势再试
+      }
+    };
+    kickDecode();                                                              // 立即踢
+    heroVideo.addEventListener("loadedmetadata", kickDecode);   // 元数据就绪再补踢（部分设备先拒后准）
+    heroVideo.addEventListener("canplay", kickDecode);              // 数据可播再补踢
+    document.addEventListener("touchstart", kickDecode, { passive: true });   // 手势兑底（play 被拒后用户一碰屏幕即重试）
   }
 
   /* ======== Hero 滚动钉住 + 分阶段动效（标题消隐 / 瀑布流盖上 支持两种驱动模式）========
@@ -162,7 +186,10 @@
       FEED_SPEED: 0.7,          // 状态模式：补间速度（进度/秒）
       // —— 布局（面板写入元素 inline style，实时生效）——
       HERO_H: 200,              // .hero 高度 vh（pin 可钉距离 = HERO_H - 100）
-      FEED_MARGIN: 0            // .feed margin-top vh（负=瀑布流提前上升与 hero 重叠）
+      FEED_MARGIN: 0,           // .feed margin-top vh（负=瀑布流提前上升与 hero 重叠）
+      // —— State 2↔3 边界吸附（卡片介绍区 ↔ 瀑布流）：滚轮触发平滑滚动动画 ——
+      SNAP_ZONE: 0.6,           // 距瀑布流标语顶多少 vh 内的滚轮触发吸附
+      SNAP_DUR: 0.5             // 吸附动画基准时长（秒/屏），实际钳制在 0.55–1.1s
     };
 
     var heroRafPending = false;
@@ -182,18 +209,33 @@
     var smoothstep = function (t) { t = clamp01(t); return t * t * (3 - 2 * t); };
     var easeOutCubic = function (t) { return 1 - Math.pow(1 - t, 3); };
 
-    // 用 rAF 把 currentTime 平滑 lerp 到目标，避免每次 scroll 直接 seek 造成跳动
+    // 用 rAF 把 currentTime 平滑 lerp 到目标，避免每次 scroll 直接 seek 造成跳动。
+    // 移动端关键差异：seek 是异步且慢的，若每帧都写 currentTime，新赋值会不断取消上一
+    // 个尚未完成的 seek → seek 永远不完成、画面永远不刷新（看起来“滚动不驱动视频”）。
+    // 因此用 seeking 标志串行化：等 seeked 事件确认上次 seek 落帧后再发起下一次；
+    // 桌面端 seek 极快（全关键帧），行为与之前基本一致。
+    var seeking = false;
+    var doSeek = function (t) {
+      seeking = true;
+      heroVideo.currentTime = t;
+    };
+    heroVideo.addEventListener("seeked", function () {
+      seeking = false;
+      // seek 期间目标又前进了较多 → 继续追帧（下次滚动/补间会 scheduleVideo，这里兜底补一帧）
+      if (Math.abs(videoTargetTime - heroVideo.currentTime) > 0.05) scheduleVideo();
+    });
     var tickVideo = function () {
       videoRafId = null;
       var dur = heroVideo.duration;
       if (!dur || isNaN(dur)) return;
+      if (seeking) { videoRafId = requestAnimationFrame(tickVideo); return; }   // 上次 seek 未完成，等 seeked
       var cur = heroVideo.currentTime;
       var diff = videoTargetTime - cur;
       if (Math.abs(diff) < 0.008) {
-        if (cur !== videoTargetTime) heroVideo.currentTime = videoTargetTime;
+        if (cur !== videoTargetTime) doSeek(videoTargetTime);
         return;
       }
-      heroVideo.currentTime = cur + diff * TUNE.LERP;
+      doSeek(cur + diff * TUNE.LERP);
       videoRafId = requestAnimationFrame(tickVideo);
     };
     var scheduleVideo = function () {
@@ -304,8 +346,8 @@
         scheduleVideo();
       }
 
-      // 供左上角调参面板读取的实时状态
-      window.__TINTTEX_STATE__ = { p: p, scrollY: y, pinDistance: pinDistance, currentTime: heroVideo.currentTime, duration: dur || 0, mode: TUNE.MODE, title: isState ? titleS : blurT, feed: sF };
+      // 供左上角调参面板 / 移动端诊断浮层读取的实时状态
+      window.__TINTTEX_STATE__ = { p: p, scrollY: y, pinDistance: pinDistance, currentTime: heroVideo.currentTime, videoTarget: videoTargetTime, duration: dur || 0, mode: TUNE.MODE, title: isState ? titleS : blurT, feed: sF };
     };
 
     // 统一 rAF 驱动：interp 模式仅滚动时算一帧；state 模式补间未结束时自动续帧（滚动停下也能播完）
@@ -326,6 +368,126 @@
     // duration 就绪后才能 scrub，元数据加载完再算一次
     heroVideo.addEventListener("loadedmetadata", function () { requestUpdate(); });
     requestUpdate();
+  }
+
+  /* ======== State 2↔3 边界吸附：卡片介绍区(showcase) ↔ 瀑布流(feed-head/photo wall) ========
+   * 页面共三个 state：1=hero（scrub 连续滚动）、2=卡片介绍区、3=瀑布流。
+   * state 2→3：showcase 尾边一进入视口，下一次向下滚轮即触发整屏 easeInOutCubic 滚动动画，
+   *   平滑滚到瀑布流顶部（标语贴视口顶）；state 3→2 反向同理滚回卡片尾。
+   * 锚点按 offsetTop 版式位置 - FEED_COVER（盖上末态）计算，与覆盖补间进度解耦，快速甩滚落点也不漂；
+   * 动画期间吞掉滚轮防抖动，结束后恢复。触屏（无 wheel）不吸附，保持原生滚动。 */
+  var feedHeadEl = document.querySelector(".feed-head");
+  var showcaseEl = document.querySelector(".showcase");
+  if (feedEl && feedHeadEl && showcaseEl) {
+    var snapRaf = null, snapFrom = 0, snapTo = 0, snapT0 = 0, snapDur = 0;
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var easeInOutCubic = function (t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+    var coverPx = function () { return ((window.__TINTTEX_TUNE__ && window.__TINTTEX_TUNE__.FEED_COVER) || 95) / 100 * window.innerHeight; };
+
+    // 吸附锚点：版式位（offsetTop 不受 translateY 影响）按“盖上完成”末态换算成滚动位
+    var wallAnchorY = function () {   // state 3：瀑布流标语顶贴视口顶
+      return Math.max(0, feedHeadEl.offsetTop + feedEl.offsetTop - coverPx());
+    };
+    var showcaseHeadEl = document.querySelector(".showcase-head");
+    // state 2 停点：showcase 标题“让心爱的灵感落地成真”落在 nav 黑色底衬下方 40px 处（不贴边、不被遮）。
+    // 标题版式位 = feedEl.offsetTop + head.offsetTop（head 的 offsetParent 是 position:relative 的 .feed）；
+    // 视觉位需再减 coverPx（覆盖补间完成时 feed 已上移 coverPx，锚点与补间进度解耦，快速甩滚落点不漂）
+    var CARDS_ANCHOR_GAP = 40;   // nav 底衬下方留白：标题顶边距黑条底边的距离
+    var cardsAnchorY = function () {   // state 2：showcase 标题贴视口顶部区域
+      var headTop = showcaseHeadEl
+        ? feedEl.offsetTop + showcaseHeadEl.offsetTop
+        : showcaseEl.offsetTop + feedEl.offsetTop;   // 兜底：head 缺失时退回 showcase 顶
+      return Math.max(0, headTop - coverPx() - (navEl ? navEl.offsetHeight : 68) - CARDS_ANCHOR_GAP);
+    };
+
+    var stepSnap = function (now) {
+      var t = snapDur <= 0 ? 1 : Math.min(1, (now - snapT0) / (snapDur * 1000));
+      window.scrollTo(0, snapFrom + (snapTo - snapFrom) * easeInOutCubic(t));
+      if (t < 1) {
+        snapRaf = requestAnimationFrame(stepSnap);
+      } else {
+        snapRaf = null;
+        document.documentElement.style.scrollBehavior = "";   // 恢复 html 的 scroll-behavior:smooth
+      }
+    };
+    var startSnap = function (toY) {
+      snapFrom = window.scrollY;
+      snapTo = toY;
+      snapDur = Math.min(1.1, Math.max(0.55, Math.abs(toY - snapFrom) / window.innerHeight * ((window.__TINTTEX_TUNE__ && window.__TINTTEX_TUNE__.SNAP_DUR) || 0.5)));
+      snapT0 = performance.now();
+      // html 的 scroll-behavior:smooth 会让逐帧 scrollTo 互相打架，动画期间临时改回 auto
+      document.documentElement.style.scrollBehavior = "auto";
+      if (snapRaf == null) snapRaf = requestAnimationFrame(stepSnap);
+    };
+
+    // 卡片介绍区（stage1）→ 瀑布流（stage2）之间不做吸附/接管处理：自由滚动。
+    // 强制停点只剩「页顶 ↔ showcase 标题贴顶」这一段（触屏在 touchend 里处理）。
+
+    // —— “探索更多”CTA：精准定位到瀑布流标语（feed-head 贴视口顶）——
+    // 原实现是 <a href="#feedWall"> 锚点跳转，会落到瀑布流版式中段（且不经过覆盖动画）；
+    // 改为复用吸附动画滚到 wallAnchorY（与 state 3 的落点完全一致），所有端一致。
+    // 保留 href 作无 JS 兜底；动画期间再点击由 startSnap 重入（从当前位置重开一段）。
+    var ctaLink = document.querySelector(".feed-cta a");
+    if (ctaLink) {
+      ctaLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (reduceMotion) { window.scrollTo(0, wallAnchorY()); return; }
+        startSnap(wallAnchorY());
+      });
+    }
+
+    // —— 触屏 stage 机制——
+    // 设计：
+    //   · 手指按住拖动：原生滚动跟手，hero 段的视频 scrub / 覆盖动画照常随位置驱动；
+    //   · 松手（touchend）接管惯性，只约束「页顶 ↔ showcase 标题」这一段，
+    //     不允许停在 hero 半路：
+    //       - 轻扫（fling，速度超阈值）：向下 → 直接进 showcase 标题停点；向上 → 直接动画到顶；
+    //       - 慢拖后松手：按当前位置吸附到最近允许停点（0 / showcase 标题贴顶）；
+    //   · showcase 标题停点以下（卡片区 → 瀑布流之间及瀑布流内部）为自由浏览区，
+    //     不做吸附、不接管惯性，用户可任意位置停留；
+    //   · 程序化 scrollTo 会取消原生惯性滚动（iOS Safari / Chrome Android 均如此），
+    //     且补间每帧覆写 scrollY → 大力甩进停点后不会有残余惯性继续下滚；
+    //   · 补间进行中再触屏 → 立即取消补间交还手指，松手后重新吸附。
+    var touchTrack = null;
+    window.addEventListener("touchstart", function (e) {
+      if (snapRaf != null) {   // 动画中触摸：交还控制权
+        cancelAnimationFrame(snapRaf);
+        snapRaf = null;
+        document.documentElement.style.scrollBehavior = "";
+      }
+      if (e.touches.length !== 1) { touchTrack = null; return; }   // 多指（捏合缩放）不跟踪
+      touchTrack = { x0: e.touches[0].clientX, y0: e.touches[0].clientY, t0: performance.now(), y: e.touches[0].clientY, t: performance.now() };
+    }, { passive: true });
+    window.addEventListener("touchmove", function (e) {
+      if (!touchTrack || e.touches.length !== 1) return;
+      touchTrack.y = e.touches[0].clientY;
+      touchTrack.t = performance.now();
+    }, { passive: true });
+    window.addEventListener("touchend", function (e) {
+      if (!touchTrack) return;
+      var dy = touchTrack.y0 - touchTrack.y;                     // >0 上滑 → 页面向下滚
+      var dt = Math.max(1, touchTrack.t - touchTrack.t0);
+      var v = dy / dt;                                           // px/ms，正 = 意图向下滚
+      var dx = Math.abs(e.changedTouches[0].clientX - touchTrack.x0);
+      touchTrack = null;
+      // 横向意图（轮播类手势）或触点在交互元素上（按钮/卡片/弹窗）不劫持；reduced-motion 不接管
+      if (Math.abs(dy) < 24 || dx > Math.abs(dy)) return;
+      if (reduceMotion) return;
+      if (e.target.closest && e.target.closest("a, button, input, .react-photo-album--photo, .modal")) return;
+      var a2 = cardsAnchorY();
+      var y = window.scrollY;
+      if (y >= a2 - 2) return;                                   // showcase 标题停点以下（含卡片区→瀑布流之间）自由浏览
+      var target;
+      if (v > 0.45) {                                            // fling 向下 → 直接进 showcase 标题停点
+        target = a2;
+      } else if (v < -0.45) {                                    // fling 向上 → 直接动画到顶
+        target = 0;
+      } else {                                                   // 慢拖松手 → 最近允许停点（hero 段中点为界）
+        target = y < a2 / 2 ? 0 : a2;
+      }
+      if (Math.abs(target - y) < 2) return;
+      startSnap(target);
+    }, { passive: true });
   }
 
   /* ======== 照片墙卡片：裁切窗口内图片视差 ======== */
@@ -392,6 +554,93 @@
     });
   }
 
+  /* ======== 触屏设备：点击卡片展开/收起信息条（hover 交互已在 CSS 按 (hover:hover) 门控）========
+   * 检测 (hover:none)+(pointer:coarse)（手机/平板触屏；带鼠标的触屏笔记本不会命中）。
+   * <html> 加 is-touch 后 CSS 才启用信息条；点击卡片 toggle expanded：
+   * 展开时同屏其余展开卡片收起（单开互斥）；点在信息条内部（如“立刻进入”）不切换。 */
+  var isTouchDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+  if (isTouchDevice) {
+    document.documentElement.classList.add("is-touch");
+    if (feedWall) {
+      // 单列模式（与 index.html 照片墙的判断保持一致）：展开后做“卡片入画”滚动修正
+      var portraitSingle = window.matchMedia("(max-width: 560px) and (orientation: portrait)");
+      var CARD_INFO_H = 68;   // 与 css .card-info 展开高度一致（新增的信息条不占当前 rect，需手动计入）
+      feedWall.addEventListener("click", function (e) {
+        if (e.target.closest && e.target.closest(".card-info")) return;
+        var card = e.target.closest(".react-photo-album--photo");
+        if (!card || !feedWall.contains(card)) return;
+        var wasOpen = card.classList.contains("expanded");
+        feedWall.querySelectorAll(".react-photo-album--photo.expanded").forEach(function (el) {
+          el.classList.remove("expanded");
+        });
+        if (!wasOpen) {
+          card.classList.add("expanded");
+          // 单列模式：若卡片（含即将展开的信息条）有部分被视口裁剪 → 平滑滚动到合适位置
+          if (portraitSingle.matches) {
+            requestAnimationFrame(function () {
+              var rect = card.getBoundingClientRect();
+              var margin = 16;   // 期望的安全边距
+              var delta = 0;
+              if (rect.top < margin) {
+                delta = rect.top - margin;   // 顶部被裁 → 上滚露出顶部
+              } else if (rect.bottom + CARD_INFO_H > window.innerHeight - margin) {
+                // 底部（含展开后的信息条）将超出 → 下滚让完整卡片入画
+                delta = rect.bottom + CARD_INFO_H - window.innerHeight + margin;
+              }
+              if (delta) {
+                if ("scrollBehavior" in document.documentElement.style) {
+                  window.scrollBy({ top: delta, behavior: "smooth" });
+                } else {
+                  window.scrollBy(0, delta);   // 老设备兜底：瞬时滚动
+                }
+              }
+            });
+          }
+        }
+      });
+    }
+  }
+
+  /* ======== 手机竖屏副标题轮播条：白色圆角内多条副标上浮顶替（非竖屏不启动）========
+   * 末条是首条的复制品 → 滚到末条后瞬时归零，实现无缝循环；
+   * i18n 切语言后文本被字典替换，条目高度定高（CSS 46px），无需重新测量。 */
+  var ticker = document.querySelector(".hero-ticker");
+  if (ticker) {
+    var tickerMq = window.matchMedia("(max-width: 560px) and (orientation: portrait)");
+    var tickerTrack = ticker.querySelector(".hero-ticker-track");
+    var tickerTimer = null, tickerIdx = 0;
+    var tickerStop = function () {
+      if (tickerTimer) { clearInterval(tickerTimer); tickerTimer = null; }
+    };
+    var tickerStart = function () {
+      tickerStop();
+      if (!tickerTrack || !tickerMq.matches || !tickerTrack.children.length) return;
+      var itemH = tickerTrack.children[0].offsetHeight || 46;
+      tickerIdx = 0;
+      tickerTrack.style.transition = "none";
+      tickerTrack.style.transform = "translateY(0)";
+      tickerTimer = setInterval(function () {
+        var n = tickerTrack.children.length;
+        if (n < 2) return;
+        tickerIdx = (tickerIdx + 1) % n;
+        tickerTrack.style.transition = "transform 0.6s cubic-bezier(0.22, 0.61, 0.21, 1)";
+        tickerTrack.style.transform = "translateY(-" + (tickerIdx * itemH) + "px)";   // 上浮：新条自下方顶入
+        if (tickerIdx === n - 1) {   // 已到末条（首条复制品）→ 过渡结束后瞬时归零
+          setTimeout(function () {
+            tickerTrack.style.transition = "none";
+            tickerTrack.style.transform = "translateY(0)";
+            tickerIdx = 0;
+          }, 650);
+        }
+      }, 3600);
+    };
+    tickerMq.addEventListener("change", tickerStart);   // 旋转/折叠开合时启停
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) tickerStop(); else tickerStart();   // 页签隐藏暂停，避免空转
+    });
+    tickerStart();
+  }
+
   /* ======== Showreel 播放 / 暂停 ======== */
   var reelVideo = document.getElementById("reelVideo");
   var reelToggle = document.getElementById("reelToggle");
@@ -432,5 +681,31 @@
     reveals.forEach(function (el) { io.observe(el); });
   } else {
     reveals.forEach(function (el) { el.classList.add("in-view"); });
+  }
+
+  /* ======== 移动端视频诊断浮层（仅 ?debug=1 时启用）========
+   * 手机上无法开 devtools；URL 带 ?debug=1 时在左下角常驻显示视频加载/seek 状态，
+   * 用于远程定位“scrub 不动”类问题。不加参数零影响，无痕可删。 */
+  if (location.search.indexOf("debug=1") !== -1) {
+    var dbg = document.createElement("div");
+    dbg.setAttribute("aria-hidden", "true");
+    dbg.style.cssText = "position:fixed;left:8px;bottom:8px;z-index:99999;background:rgba(0,0,0,.78);color:#4f4;font:11px/1.55 monospace;padding:8px 10px;border-radius:6px;white-space:pre;pointer-events:none;";
+    document.body.appendChild(dbg);
+    setInterval(function () {
+      var v = document.querySelector(".hero-video");
+      var st = window.__TINTTEX_STATE__ || {};
+      if (!v) { dbg.textContent = "no .hero-video element"; return; }
+      dbg.textContent = [
+        "readyState=" + v.readyState + " (0=NOTHING 1=META 2=DATA 3=FUTURE 4=ENOUGH)",
+        "networkState=" + v.networkState + " (0=EMPTY 1=IDLE 2=LOADING 3=NO_SOURCE)",
+        "duration=" + (isNaN(v.duration) ? "NaN" : v.duration.toFixed(2)),
+        "currentTime=" + v.currentTime.toFixed(3),
+        "targetTime=" + ((window.__TINTTEX_STATE__ && st.videoTarget) || 0).toFixed(3),
+        "seeking=" + v.seeking + " paused=" + v.paused,
+        "videoWxH=" + v.videoWidth + "x" + v.videoHeight,
+        "error=" + (v.error ? v.error.code : "0"),
+        "scrollY=" + Math.round(st.scrollY || 0) + " p=" + (st.p != null ? st.p.toFixed(3) : "-")
+      ].join("\n");
+    }, 200);
   }
 })();

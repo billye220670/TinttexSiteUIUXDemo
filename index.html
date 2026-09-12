@@ -42,7 +42,8 @@
     <div class="hero-pin">
       <!-- hero 视频：不自动播放，暂停在第一帧；播放进度由 main.js 按滚动 scrub 驱动 -->
       <!-- hero-scrub.mp4 为全关键帧编码版（GOP=1 / 30fps / faststart / 去音轨；当前为 1642×886 旧版剪辑）；scrub 只播视频 4–9s 段，窗口由 main.js VIDEO_T0/VIDEO_T1 控制 -->
-      <video class="hero-video" src="hero-scrub.mp4" muted playsinline preload="auto"></video>
+      <!-- poster：移动端视频加载/首帧解码完成前显示首帧图，避免黑屏（_frame_start.png 为视频 t=0 抽帧） -->
+      <video class="hero-video" src="hero-scrub.mp4" muted playsinline preload="auto" poster="_frame_start.png"></video>
       <div class="hero-shade" aria-hidden="true"></div>
       <!-- 渐变黑幕：沙发挡镜后压暗画面、衔接瀑布流上升；opacity 由 main.js 按滚动进度淡入 -->
       <div class="hero-veil" aria-hidden="true"></div>
@@ -52,6 +53,17 @@
       <div class="hero-copy">
         <h1 class="hero-title" data-i18n="hero.title">逛一逛，摆一摆。</h1>
         <p class="hero-sub" data-i18n="hero.sub">佛山展厅一比一还原，沉浸逛展，线上搭配，AI客服全程陪跑。</p>
+        <!-- 手机竖屏专属：白色圆角副标题轮播条（非竖屏 display:none）。
+             首条复用 hero.sub 键与原副标题同源（i18n 同步），后续为补充卖点；
+             末条是首条的复制品（同 key）→ 上浮到它后瞬时归零，实现无缝循环。 -->
+        <div class="hero-ticker" aria-hidden="true">
+          <div class="hero-ticker-track">
+            <span class="hero-ticker-item" data-i18n="hero.sub">佛山展厅一比一还原，沉浸逛展，线上搭配，AI客服全程陪跑。</span>
+            <span class="hero-ticker-item" data-i18n="hero.tick1">海量单品，摆进真实场景看效果</span>
+            <span class="hero-ticker-item" data-i18n="hero.tick2">所见即所得，真实货品直达家中</span>
+            <span class="hero-ticker-item" data-i18n="hero.sub">佛山展厅一比一还原，沉浸逛展，线上搭配，AI客服全程陪跑。</span>
+          </div>
+        </div>
       </div>
     </div>
     <!-- 探索更多 CTA：fixed 固定在视口，随标题一起模糊渐隐（main.js 驱动） -->
@@ -64,7 +76,90 @@
   </section>
 
   <!-- ======== 场景瀑布流 ======== -->
+  <!-- 顶部功能导览板块（showcase）也在 .feed 内：瀑布流“盖上”时用户先看到这里，再往下滚才是照片墙 -->
   <section class="feed" id="feed" aria-label="高斯泼溅场景瀑布流" data-i18n-aria="aria.feed">
+    <!-- 功能导览：导语 + 三段左右交替（深灰媒体面板 / 文案+CTA），文案走 IKEA/苹果风——让用户快速理解“做什么 / 得到什么 / 为什么选我们”；
+         所有图片位均为渐变占位块（.sc-ph），接入真实素材时整块替换 -->
+    <div class="showcase">
+      <header class="showcase-head">
+        <h2 data-i18n="sc.title">让心爱的灵感落地成真</h2>
+        <p data-i18n="sc.sub">在 Tinttex，用激发创造力的工具，发现更多空间灵感。</p>
+      </header>
+
+      <!-- 01 场景漫游：1:1 高斯场景里漫游，AI 对话找货并出产品信息 -->
+      <div class="showcase-row">
+        <div class="showcase-media sc-media--roam" aria-hidden="true">
+          <div class="sc-scene"></div>
+          <div class="sc-chat">
+            <p class="sc-bubble sc-bubble--user" data-i18n="sc.chatUser">帮我找这把椅子</p>
+            <p class="sc-bubble sc-bubble--ai" data-i18n="sc.chatAi">已找到 3 件同款</p>
+            <p class="sc-chat-hint"><span data-i18n="sc.chatHint">点击查看产品信息</span> →</p>
+            <div class="sc-product"><i></i><span data-i18n="sc.product">北欧布艺单人椅 · ¥899</span></div>
+          </div>
+        </div>
+        <div class="showcase-copy">
+          <h3 data-i18n="sc.t1h">先逛空间，再挑好物</h3>
+          <p data-i18n="sc.t1p">在 1:1 还原的真实场景里漫游，AI 导航边逛边聊，看中的家具随手即出产品信息。</p>
+          <button class="pill-btn sc-btn" type="button" data-modal-open="signupModal"><span data-i18n="sc.cta">了解更多</span></button>
+        </div>
+      </div>
+
+      <!-- 02 产品库 + 拖拽渲染：文案左，媒体面板右 -->
+      <div class="showcase-row showcase-row--flip">
+        <div class="showcase-copy">
+          <h3 data-i18n="sc.t2h">海量单品，摆上就能看</h3>
+          <p data-i18n="sc.t2p">问 AI 就能找到想要的货品，拖进场景摆好，秒出照片级渲染。</p>
+          <button class="pill-btn sc-btn" type="button" data-modal-open="signupModal"><span data-i18n="sc.cta">了解更多</span></button>
+        </div>
+        <div class="showcase-media sc-media--board" aria-hidden="true">
+          <span class="sc-drag" data-i18n="sc.drag">拖拽摆放</span>
+          <div class="sc-board">
+            <div class="sc-board-grid">
+              <span class="sc-ph sc-ph--b1"></span>
+              <span class="sc-ph sc-ph--b2"></span>
+              <span class="sc-ph sc-ph--b3"></span>
+            </div>
+            <div class="sc-board-meta">
+              <div class="sc-board-title">
+                <h4 data-i18n="sc.plan">我的客厅方案</h4>
+                <span data-i18n="sc.planMeta">28 件单品 · 秒出渲染</span>
+              </div>
+              <div class="sc-board-avatars"><span></span><span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 03 一键下单：Tinttex 渲染 vs 到家实拍对比 -->
+      <div class="showcase-row">
+        <div class="showcase-media sc-media--order" aria-hidden="true">
+          <div class="sc-compare">
+            <figure>
+              <span class="sc-ph sc-ph--r"></span>
+              <figcaption data-i18n="sc.rend">Tinttex 渲染</figcaption>
+            </figure>
+            <span class="sc-arrow">→</span>
+            <figure>
+              <span class="sc-ph sc-ph--k"></span>
+              <figcaption data-i18n="sc.real">到家实拍</figcaption>
+            </figure>
+          </div>
+          <span class="sc-order-pill" data-i18n="sc.order">一键下单 · 直达家中</span>
+        </div>
+        <div class="showcase-copy">
+          <h3 data-i18n="sc.t3h">所见即所得，一键到家</h3>
+          <p data-i18n="sc.t3p">渲染里什么样，家里就什么样——下单后真实货品直达家中一角。</p>
+          <button class="pill-btn sc-btn" type="button" data-modal-open="signupModal"><span data-i18n="sc.cta">了解更多</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 瀑布流章节标语（state 3 落位点）：卡片介绍区 → 瀑布流的章节导语；吸附滚动动画的锚点即此块顶部 -->
+    <header class="feed-head">
+      <h2 data-i18n="fh.title">每张图，都是能走进的展厅</h2>
+      <p data-i18n="fh.sub">精选场景 1:1 还原真实空间，点开任意一张，即可沉浸漫游。</p>
+    </header>
+
     <!-- React 照片墙挂载点；内部为 CDN 不可用时的静态兜底网格，挂载成功后会被整体替换 -->
     <div id="feedWall" class="feed-wall">
       <ul class="feed-grid">
@@ -171,26 +266,69 @@
       { key: "v4b", src: "assets/img/service-04.webp", width: 1000, height: 900,  pos: "50% 100%", alt: "高斯泼溅场景 · 陈列柜前（下部视角）" },
     ];
 
-    createRoot(document.getElementById("feedWall")).render(
-      React.createElement(ColumnsPhotoAlbum, {
-        photos,
-        // 列数随容器宽度步进，组件自行撑满容器并平衡各列高度
-        columns: (w) => (w < 560 ? 2 : w < 1100 ? 3 : w < 1650 ? 4 : w < 2100 ? 5 : 6),
-        spacing: (w) => (w < 600 ? 3 : 6),
-        padding: 0,
-        render: {
-          image: (props, { photo }) =>
-            React.createElement("img", {
-              ...props,
-              style: {
-                ...props.style,
-                objectFit: "cover",
-                objectPosition: photo.pos || "50% 50%",
-              },
-            }),
-        },
-      })
-    );
+    /* 手机竖屏专用：单列 + 每张图按 4:3 比例 cover 裁切（元数据统一伪造成 4:3）。
+       折叠屏内屏 / pad / 横屏宽度不在阈值内，仍走按宽度分列的错拼布局。
+       用 matchMedia + change 监听：旋转屏幕 / 折叠展开时自动重渲染，无需刷新。 */
+    const portraitSingleCol = window.matchMedia("(max-width: 560px) and (orientation: portrait)");
+
+    /* 触屏设备点击卡片展开的信息条内容：左侧标题（佛山品牌/展厅假数据）+ 副标，右侧“立刻进入”。
+       按图片文件名映射；桌面端该条由 CSS display:none 不占位，仅触屏参与交互。 */
+    const TOUCH_TITLES = {
+      "scene-01.jpg":    ["岭南天地 · 城市会客厅", "禅城 · 高斯泼溅实景展厅"],
+      "service-01.webp": ["石湾陶都 · 匠心展廊", "石湾 · 高斯泼溅实景展厅"],
+      "scene-02.jpg":    ["西樵山麓 · 林境大宅", "南海 · 高斯泼溅实景展厅"],
+      "service-02.webp": ["季华园畔 · 阅光书房", "禅城 · 高斯泼溅实景展厅"],
+      "scene-03.jpg":    ["东华里 · 暖木公寓", "禅城 · 高斯泼溅实景展厅"],
+      "service-03.jpg":  ["佛山新城 · 云顶餐厅", "顺德 · 高斯泼溅实景展厅"],
+      "service-04.webp": ["南风古灶 · 藏品陈列馆", "石湾 · 高斯泼溅实景展厅"],
+    };
+
+    const wallRoot = createRoot(document.getElementById("feedWall"));
+    const renderWall = function () {
+      const single = portraitSingleCol.matches;
+      const layoutPhotos = single
+        ? photos.map(function (p) { return { ...p, width: 4, height: 3 }; })   // 4:3 元数据 → 格子全为 4:3，图片 cover 裁入
+        : photos;
+      wallRoot.render(
+        React.createElement(ColumnsPhotoAlbum, {
+          photos: layoutPhotos,
+          // 列数随容器宽度步进，组件自行撑满容器并平衡各列高度；单列模式固定 1 列
+          columns: (w) => (single ? 1 : w < 560 ? 2 : w < 1100 ? 3 : w < 1650 ? 4 : w < 2100 ? 5 : 6),
+          // 单列模式：spacing 只体现为列内 row-gap → 用作卡片上下间距，加大到 16px 更透气
+          spacing: (w) => (single ? 16 : w < 600 ? 3 : 6),
+          padding: 0,
+          render: {
+            image: (props, { photo }) =>
+              React.createElement("img", {
+                ...props,
+                style: {
+                  ...props.style,
+                  objectFit: "cover",
+                  objectPosition: photo.pos || "50% 50%",
+                },
+              }),
+            // extras：渲染在图片之后的额外语素（文档流内）→ 触屏端点击卡片时该条高度 0→58px 展开，
+            // 卡片容器高度由内容撑开，下方卡片被顺畅推挤（高度动画）
+            extras: (_, { photo }) => {
+              const t = TOUCH_TITLES[(photo.src || "").split("/").pop()] || ["佛山 · 高斯泼溅展厅", "高斯泼溅实景展厅"];
+              return React.createElement(
+                "div",
+                { className: "card-info" },
+                React.createElement(
+                  "div",
+                  { className: "card-info-text" },
+                  React.createElement("strong", { className: "card-info-title" }, t[0]),
+                  React.createElement("span", { className: "card-info-sub" }, t[1])
+                ),
+                React.createElement("span", { className: "card-info-cta", "data-i18n": "card.cta" }, "立刻进入")
+              );
+            },
+          },
+        })
+      );
+    };
+    portraitSingleCol.addEventListener("change", renderWall);
+    renderWall();
   </script>
 
   <!-- ======== 登录 / 注册弹窗：Pinterest 式居中卡片；配色映射——品牌红主钮 → 我们的黑底白字；打开时 body.modal-open 锁滚动 + 遮罩压暗 ======== -->

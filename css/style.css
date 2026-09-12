@@ -399,6 +399,27 @@ html[lang="ja"] .hero-copy {
   top: 28%;
 }
 
+/* 日文排版禁则：标点（。、ー 等）不落行首、单词不从中间断开；
+   日文本身不用字间距，去掉中文向的 tracking 让假名/汉字排版自然 */
+html[lang="ja"] .hero-title,
+html[lang="ja"] .hero-sub {
+  line-break: strict;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+html[lang="ja"] .hero-title { letter-spacing: 0.02em; }
+html[lang="ja"] .hero-sub { letter-spacing: 0.04em; }
+
+/* 手机竖屏：日/英文案折行多、副标长 → 标题组再上移 + CTA 下移，
+   拉开底部文本与 explore 按钮的距离，避免 overlap（中文单行只需 CTA 下移即可） */
+@media (max-width: 560px) and (orientation: portrait) {
+  .feed-cta { bottom: 22%; }   /* CTA 从 32% 下移到 22%，远离上方文本 */
+  html[lang="en"] .hero-copy,
+  html[lang="ja"] .hero-copy { top: 17%; }
+  html[lang="en"] .hero-sub,
+  html[lang="ja"] .hero-sub { margin-top: 16px; max-width: 86vw; margin-inline: auto; }
+}
+
 /* 副标题：随文档流跟在主标题下方；加轻微投影提升在明亮视频画面上的可读性 */
 .hero-sub {
   margin: 26px 0 0;
@@ -407,6 +428,55 @@ html[lang="ja"] .hero-copy {
   letter-spacing: 0.14em;
   color: rgba(255, 255, 255, 0.78);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 2px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* ======== 手机竖屏副标题轮播条（白色圆角，多条副标上浮顶替轮播） ========
+   非竖屏 display:none；竖屏下原 hero-sub 转为 sr-only（读屏/i18n 保留，视觉由轮播条接替）。 */
+.hero-ticker {
+  display: none;
+  margin: 18px auto 0;
+  max-width: 86vw;
+  background: #fff;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.3);
+}
+.hero-ticker-track {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+.hero-ticker-item {
+  flex: none;
+  height: 46px;                     /* 定高：轮播位移按此项高度计算，条内多行也够容 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  color: #1a1a1a;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  text-align: center;
+}
+@media (max-width: 560px) and (orientation: portrait) {
+  .hero-ticker { display: block; }
+  /* 中文主标题在竖屏下拆两行：限宽 ≈ 四字（含逗号）宽，逗号后自然断行 → “逛一逛，/ 摆一摆。” */
+  html[lang="zh-CN"] .hero-title,
+  html[lang="zh-TW"] .hero-title {
+    max-width: 4.4em;
+    margin-inline: auto;
+  }
+  /* 原副标视觉隐藏但保留给读屏/i18n（轮播条首条与它同源） */
+  .hero-sub {
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0; border: 0;
+    clip: rect(0 0 0 0);
+    overflow: hidden;
+    white-space: nowrap;
+  }
 }
 
 /* ======== 圆形箭头按钮 ======== */
@@ -813,13 +883,7 @@ html[lang="ja"] .hero-copy {
   cursor: pointer;        /* “立刻进入”作为可点 CTA，hover 显示手指光标 */
   z-index: 3;
 }
-.feed-wall .react-photo-album--photo:hover::before { opacity: 1; }
-.feed-wall .react-photo-album--photo:hover::after {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-/* 内部图片 hover：放大 + 鼠标反向平移（“透过窗口看一张更大的图”裁切视差） */
+/* 内部图片基础样式：cover 裁入格子；用独立属性 scale/translate 分离两条 transition（桌面 hover 用） */
 .feed-wall .react-photo-album--image {
   object-fit: cover;
   border-radius: 8px;
@@ -828,9 +892,70 @@ html[lang="ja"] .hero-copy {
   transition: scale 0.5s var(--ease), translate 0.4s var(--ease);
   will-change: transform;
 }
-.feed-wall .react-photo-album--photo:hover .react-photo-album--image {
-  scale: 1.15;
-  translate: var(--tx, 0px) var(--ty, 0px);
+/* hover 交互只在具备 hover 能力的设备（桌面）启用；触屏设备改用点击展开信息条（见下方 is-touch 区块） */
+@media (hover: hover) and (pointer: fine) {
+  .feed-wall .react-photo-album--photo:hover::before { opacity: 1; }
+  .feed-wall .react-photo-album--photo:hover::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* 内部图片 hover：放大 + 鼠标反向平移（“透过窗口看一张更大的图”裁切视差） */
+  .feed-wall .react-photo-album--photo:hover .react-photo-album--image {
+    scale: 1.15;
+    translate: var(--tx, 0px) var(--ty, 0px);
+  }
+}
+
+/* ======== 触屏设备（is-touch 由 main.js 按 (hover:none)+(pointer:coarse) 检测后挂在 <html>）======== */
+/* 信息条仅触屏设备参与布局与交互；桌面端由 React 注入但 display:none 不占位 */
+.feed-wall .card-info { display: none; }
+.is-touch .feed-wall .react-photo-album--photo {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* 触屏不需要 hover 渐变遮罩与伪元素 CTA（opacity:0 伪元素仍会拦截点击，直接移除） */
+.is-touch .feed-wall .react-photo-album--photo::before,
+.is-touch .feed-wall .react-photo-album--photo::after { content: none; }
+/* 展开后图片底部与信息条齐平衔接：顶部保留圆角、底部改直角，
+   信息条底角与卡片圆角一致（外层 overflow:hidden 也会再裁一道） */
+.is-touch .feed-wall .react-photo-album--image { border-radius: 8px 8px 0 0; }
+.is-touch .feed-wall .card-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 18px;   /* 信息条内边距：标题/按钮距卡片左右 18px */
+  height: 0;
+  overflow: hidden;
+  background: linear-gradient(270deg, rgba(30, 30, 30, 0.95), rgba(46, 46, 46, 0.95));   /* 左亮→右暗的横向渐变 */
+  border-radius: 0 0 8px 8px;
+  transition: height 0.22s var(--ease);   /* 快速响应：短时长 + ease-out 曲线，跟手不拖沓 */
+}
+.is-touch .feed-wall .react-photo-album--photo.expanded .card-info { height: 68px; }
+.card-info-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.card-info-title {
+  font-size: 15px; font-weight: 600; color: #fff;
+  letter-spacing: 0.04em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-info-sub {
+  font-size: 12px; color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.06em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* 样式对齐原 hover 伪元素 CTA（细框药丸钮）；触屏用真实元素，i18n 走 data-i18n（key: card.cta） */
+.card-info-cta {
+  flex: none;
+  padding: 7px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
 /* CDN 不可用时的静态兜底网格（React 挂载后会被整体替换） */
@@ -923,4 +1048,194 @@ html[lang="ja"] .hero-copy {
 /* reduced-motion 下 hero 是静态单屏（非 sticky），取消瀑布流上移重叠（置于末尾以覆盖移动端的值） */
 @media (prefers-reduced-motion: reduce) {
   .feed { margin-top: 0; }
+}
+
+/* ======== 瀑布流顶部·功能导览板块（showcase） ======== */
+/* 复刻 Pinterest 图例：暖米色媒体面板 + 白色 UI 卡片模拟产品界面，三段左右交替；
+   暗色页面上的亮色板块，正好承接瀑布流“盖上”后的第一屏 */
+/* showcase 尾部与下方「瀑布流标语」共同构成卡片介绍区 → 瀑布流的章节间隔 */
+.showcase {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: clamp(48px, 7vw, 104px) var(--pad) clamp(56px, 8vw, 128px);
+}
+.showcase-head {
+  max-width: 560px;
+  margin: 0 auto clamp(48px, 7vw, 104px);
+  text-align: center;
+}
+.showcase-head h2 { font-size: clamp(26px, 3.4vw, 42px); font-weight: 600; letter-spacing: -0.01em; }
+.showcase-head p { margin-top: 12px; color: var(--text-dim); }
+
+/* 瀑布流章节标语（state 3 落位点）：卡片介绍区 → 瀑布流照片墙之间的章节导语，
+   上下的富余留白同时承担两板块的视觉间隔；吸附滚动动画的锚点即此块顶部 */
+.feed-head {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(88px, 13vw, 190px) var(--pad) clamp(40px, 6vw, 88px);
+  text-align: center;
+}
+.feed-head h2 { font-size: clamp(26px, 3.4vw, 42px); font-weight: 600; letter-spacing: -0.01em; }
+.feed-head p { margin-top: 12px; color: var(--text-dim); }
+
+.showcase-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: clamp(28px, 5vw, 72px);
+  max-width: 1020px;
+  margin: 0 auto clamp(56px, 8vw, 120px);
+}
+.showcase-row:last-child { margin-bottom: 0; }
+.showcase-row--flip .showcase-media { order: 2; }
+.showcase-row--flip .showcase-copy { order: 1; }
+
+.showcase-copy h3 { font-size: clamp(22px, 2.4vw, 30px); font-weight: 600; }
+.showcase-copy p { margin: 10px 0 22px; max-width: 38ch; color: var(--text-dim); }
+/* CTA：白底黑字主钮（同导航注册钮的反色逻辑），点击直接拉起注册弹窗 */
+.sc-btn { background: #fff; color: #0a0a0a; border-color: #fff; font-weight: 600; }
+.sc-btn:hover { background: rgba(255, 255, 255, 0.82); border-color: rgba(255, 255, 255, 0.82); }
+
+/* 媒体面板：深灰底 + 细描边（与照片墙同族暗色，又与内部白色 UI 卡片形成对比） */
+.showcase-media {
+  position: relative;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(24px, 4vw, 56px);
+  background: #1a1a1c;
+  border: 1px solid var(--line-soft);
+  border-radius: 32px;
+}
+
+/* 渐变占位块：所有图片位均以渐变色块示意，接入真实素材时整块替换 */
+.sc-ph { display: block; border-radius: 10px; }
+.sc-ph--b1 { background: linear-gradient(160deg, #c96f4a, #8f4630); }
+.sc-ph--b2 { background: linear-gradient(160deg, #a7b79a, #6f8163); }
+.sc-ph--b3 { background: linear-gradient(160deg, #e6ddcd, #c9bda4); }
+
+/* 01 场景漫游：场景大图占位 + 悬浮 AI 对话卡（用户问 → AI 答 → 产品信息条） */
+.sc-scene {
+  width: min(380px, 100%);
+  height: 190px;
+  border-radius: 14px;
+  background:
+    radial-gradient(90% 120% at 78% 18%, rgba(255, 244, 224, 0.5) 0%, rgba(255, 244, 224, 0) 55%),
+    linear-gradient(165deg, #d9c9b2 0%, #a98d6f 55%, #6f5a42 100%);
+}
+.sc-chat {
+  z-index: 2;
+  width: min(320px, 100%);
+  margin-top: -34px;   /* 上叠进场景图，制造“对话浮在场景上”的层次 */
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+.sc-bubble {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.sc-bubble--user {
+  align-self: flex-end;
+  background: #0a0a0a;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.sc-bubble--ai {
+  align-self: flex-start;
+  background: #f0eeea;
+  color: #0a0a0a;
+  border-bottom-left-radius: 4px;
+}
+.sc-chat-hint { align-self: flex-start; margin-left: 4px; font-size: 11px; color: #8a857c; }
+.sc-product {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(10, 10, 10, 0.08);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #0a0a0a;
+}
+.sc-product i {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  flex: none;
+  background: linear-gradient(160deg, #c9b6a0, #8a715a);
+}
+
+/* 02 产品库 + 拖拽渲染：白卡内 1 大 + 2 小图占位 + 方案名/元信息 + 头像对；右上角“拖拽摆放”浮标 */
+.sc-drag {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  z-index: 2;
+  padding: 8px 14px;
+  background: #fff;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0a0a0a;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+}
+.sc-board {
+  width: min(360px, 100%);
+  padding: 14px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(10, 10, 10, 0.12);
+}
+.sc-board-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  grid-template-rows: repeat(2, 110px);
+  gap: 6px;
+}
+.sc-ph--b1 { grid-row: 1 / 3; }
+.sc-board-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+.sc-board-title h4 { font-size: 15px; font-weight: 600; color: #0a0a0a; }
+.sc-board-title span { font-size: 12px; color: #7c766c; }
+.sc-board-avatars { display: flex; }
+.sc-board-avatars span { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; }
+.sc-board-avatars span + span { margin-left: -8px; }
+.sc-board-avatars span:first-child { background: linear-gradient(160deg, #d8c7b4, #a98d6f); }
+.sc-board-avatars span:last-child { background: linear-gradient(160deg, #8d9b83, #55624c); }
+
+/* 03 一键下单：左“Tinttex 渲染”（暖亮）→ 右“到家实拍”（去饱和灰调，像手机随手拍）对比 + 下单 pill */
+.sc-media--order { min-height: 400px; }
+.sc-compare { display: flex; align-items: center; gap: 14px; }
+.sc-compare figure { display: flex; flex-direction: column; gap: 8px; }
+.sc-compare .sc-ph { width: 132px; height: 168px; }
+.sc-ph--r { background: linear-gradient(160deg, #ecd9bd 0%, #d9b98c 55%, #b08d5e 100%); }
+.sc-ph--k { background: linear-gradient(160deg, #a3a7ab 0%, #7a7f84 55%, #565b60 100%); }
+.sc-compare figcaption { font-size: 12px; font-weight: 500; color: #b9b5ad; text-align: center; }
+.sc-arrow { color: #fff; font-size: 22px; font-weight: 500; }
+.sc-order-pill {
+  margin-top: 18px;
+  padding: 10px 20px;
+  background: #fff;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0a0a0a;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+}
+
+/* showcase 响应式：窄屏改单列，媒体面板始终在文案上方 */
+@media (max-width: 860px) {
+  .showcase-row { grid-template-columns: 1fr; gap: 24px; max-width: 560px; }
+  .showcase-row--flip .showcase-media { order: 0; }
+  .showcase-row--flip .showcase-copy { order: 1; }
+  .showcase-media { min-height: 0; }
+  .sc-compare .sc-ph { width: 108px; height: 138px; }
 }
