@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <!-- 移动端禁手势/双击缩放：与主页一致 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tinttex — 探索全部场景</title>
+  <meta name="description" content="Tinttex 探索页：更多 1:1 还原的真实展厅场景，点开任意一张即可沉浸漫游。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230e0e0e'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='18' font-weight='700' fill='%23fff' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/react-photo-album@3.6.1/dist/styles/columns.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<!-- 隐藏版探索页：与 explore.html 同一套照片墙，但去掉顶部导航（字标/登录/注册/语言钮）与章节标语两行，
+     仅保留照片墙本体；全站无任何链接指向本页（不暴露在路由里），只能直接输 URL 访问。
+     语言无切换入口：i18n.js 加载时按 localStorage 记忆（或浏览器语言）自动套用，与其余页面共享记忆。 -->
+<body id="top" class="page-explore">
+
+  <!-- ======== 照片墙本体 ========
+       排版全量复用主页规则：.feed 墙壳 padding / .feed-wall 卡片；
+       PC hover（渐变遮罩 + 伪元素 CTA + 裁切视差）与触屏（is-touch 点击展开信息条）的分离处理同主页，
+       由 style.css 的 (hover:hover) 门控 + main.js 的 is-touch 逻辑直接生效，本页零额外代码 -->
+  <main>
+    <!-- React 照片墙挂载点；内部为 CDN 不可用时的静态兜底网格，挂载成功后会被整体替换 -->
+    <section class="feed" aria-label="高斯泼溅场景瀑布流" data-i18n-aria="aria.feed">
+      <div id="feedWall" class="feed-wall">
+        <ul class="feed-grid">
+          <li class="feed-item"><img src="assets/img/scene-01.jpg" alt="高斯泼溅场景 · 庭院平层：现代客厅与内庭院" loading="lazy"></li>
+          <li class="feed-item"><img src="assets/img/service-01.webp" alt="高斯泼溅场景 · 客厅一角：深色木质电视墙" loading="lazy"></li>
+          <li class="feed-item"><img src="assets/img/scene-02.jpg" alt="高斯泼溅场景 · 林间大宅：森林景观客厅" loading="lazy"></li>
+          <li class="feed-item"><img src="assets/img/service-02.webp" alt="高斯泼溅场景 · 阅读角：壁炉旁的书架与沙发" loading="lazy"></li>
+          <li class="feed-item"><img src="assets/img/scene-03.jpg" alt="高斯泼溅场景 · 暖木公寓：木质小宅起居空间" loading="lazy"></li>
+          <li class="feed-item"><img src="assets/img/service-03.jpg" alt="高斯泼溅场景 · 挑高餐厅：落地窗与城市景观" loading="lazy"></li>
+          <li class="feed-item"><img src="assets/img/service-04.webp" alt="高斯泼溅场景 · 陈列柜前：壁炉与藏品展示柜" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-l" src="assets/img/scene-01.jpg" alt="高斯泼溅场景 · 庭院平层（左侧视角）" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-t" src="assets/img/service-01.webp" alt="高斯泼溅场景 · 客厅一角（上部视角）" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-l" src="assets/img/scene-02.jpg" alt="高斯泼溅场景 · 林间大宅（左侧视角）" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-t" src="assets/img/service-02.webp" alt="高斯泼溅场景 · 阅读角（上部视角）" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-t" src="assets/img/service-03.jpg" alt="高斯泼溅场景 · 挑高餐厅（上部视角）" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-t" src="assets/img/service-04.webp" alt="高斯泼溅场景 · 陈列柜前（上部视角）" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-r" src="assets/img/scene-01.jpg" alt="高斯泼溅场景 · 庭院平层（右侧视角）" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-b" src="assets/img/service-01.webp" alt="高斯泼溅场景 · 客厅一角（下部视角）" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-r" src="assets/img/scene-02.jpg" alt="高斯泼溅场景 · 林间大宅（右侧视角）" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-b" src="assets/img/service-02.webp" alt="高斯泼溅场景 · 阅读角（下部视角）" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-b" src="assets/img/service-03.jpg" alt="高斯泼溅场景 · 挑高餐厅（下部视角）" loading="lazy"></li>
+          <li class="feed-item"><img class="crop-b" src="assets/img/service-04.webp" alt="高斯泼溅场景 · 陈列柜前（下部视角）" loading="lazy"></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- defer 与主页同理：i18n / main.js 在 DOM 完成后执行；main.js 的本页有效逻辑 =
+       is-touch 检测 + 触屏卡片点击展开 + 桌面卡片裁切视差（导航/hero 等主页逻辑因元素缺失自动跳过） -->
+  <script src="js/i18n.js" defer></script>
+  <script src="js/main.js" defer></script>
+
+  <!-- 错拼照片墙：与主页同一套挂载逻辑（Columns 布局 / 竖屏单列 4:3 / 触屏信息条 extras） -->
+  <script type="module">
+    import React from "https://esm.sh/react@18.3.1";
+    import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
+    import { ColumnsPhotoAlbum } from "https://esm.sh/react-photo-album@3.6.1?deps=react@18.3.1";
+
+    /* width/height 是喂给布局算法的比例元数据（伪造），真实图片以 object-fit: cover 裁入格子；
+       pos 控制同一原图变体的取图区域（横图取左/右，竖图取上/下） */
+    const photos = [
+      { key: "s1",  src: "assets/img/scene-01.jpg",    width: 1600, height: 1000, alt: "高斯泼溅场景 · 庭院平层：现代客厅与内庭院" },
+      { key: "v1",  src: "assets/img/service-01.webp", width: 900,  height: 1400, alt: "高斯泼溅场景 · 客厅一角：深色木质电视墙" },
+      { key: "s2",  src: "assets/img/scene-02.jpg",    width: 1500, height: 1000, alt: "高斯泼溅场景 · 林间大宅：森林景观客厅" },
+      { key: "v2",  src: "assets/img/service-02.webp", width: 1000, height: 1300, alt: "高斯泼溅场景 · 阅读角：壁炉旁的书架与沙发" },
+      { key: "s3",  src: "assets/img/scene-03.jpg",    width: 1100, height: 1100, alt: "高斯泼溅场景 · 暖木公寓：木质小宅起居空间" },
+      { key: "v3",  src: "assets/img/service-03.jpg",  width: 1000, height: 1250, alt: "高斯泼溅场景 · 挑高餐厅：落地窗与城市景观" },
+      { key: "v4",  src: "assets/img/service-04.webp", width: 900,  height: 1250, alt: "高斯泼溅场景 · 陈列柜前：壁炉与藏品展示柜" },
+      { key: "s1l", src: "assets/img/scene-01.jpg",    width: 800,  height: 1300, pos: "0% 50%",   alt: "高斯泼溅场景 · 庭院平层（左侧视角）" },
+      { key: "v1t", src: "assets/img/service-01.webp", width: 1200, height: 900,  pos: "50% 0%",   alt: "高斯泼溅场景 · 客厅一角（上部视角）" },
+      { key: "s2l", src: "assets/img/scene-02.jpg",    width: 700,  height: 1500, pos: "0% 50%",   alt: "高斯泼溅场景 · 林间大宅（左侧视角）" },
+      { key: "v2t", src: "assets/img/service-02.webp", width: 1300, height: 900,  pos: "50% 0%",   alt: "高斯泼溅场景 · 阅读角（上部视角）" },
+      { key: "v3t", src: "assets/img/service-03.jpg",  width: 1200, height: 1000, pos: "50% 0%",   alt: "高斯泼溅场景 · 挑高餐厅（上部视角）" },
+      { key: "v4t", src: "assets/img/service-04.webp", width: 1000, height: 1000, pos: "50% 0%",   alt: "高斯泼溅场景 · 陈列柜前（上部视角）" },
+      { key: "s1r", src: "assets/img/scene-01.jpg",    width: 700,  height: 1400, pos: "100% 50%", alt: "高斯泼溅场景 · 庭院平层（右侧视角）" },
+      { key: "v1b", src: "assets/img/service-01.webp", width: 1100, height: 1100, pos: "50% 100%", alt: "高斯泼溅场景 · 客厅一角（下部视角）" },
+      { key: "s2r", src: "assets/img/scene-02.jpg",    width: 800,  height: 1300, pos: "100% 50%", alt: "高斯泼溅场景 · 林间大宅（右侧视角）" },
+      { key: "v2b", src: "assets/img/service-02.webp", width: 1400, height: 900,  pos: "50% 100%", alt: "高斯泼溅场景 · 阅读角（下部视角）" },
+      { key: "v3b", src: "assets/img/service-03.jpg",  width: 900,  height: 1200, pos: "50% 100%", alt: "高斯泼溅场景 · 挑高餐厅（下部视角）" },
+      { key: "v4b", src: "assets/img/service-04.webp", width: 1000, height: 900,  pos: "100% 100%", alt: "高斯泼溅场景 · 陈列柜前（下部视角）" },
+    ];
+
+    /* 手机竖屏专用：单列 + 每张图按 4:3 比例 cover 裁切（元数据统一伪造成 4:3）。
+       折叠屏内屏 / pad / 横屏宽度不在阈值内，仍走按宽度分列的错拼布局。
+       用 matchMedia + change 监听：旋转屏幕 / 折叠展开时自动重渲染，无需刷新。 */
+    const portraitSingleCol = window.matchMedia("(max-width: 560px) and (orientation: portrait)");
+
+    /* 触屏设备点击卡片展开的信息条内容：左侧标题（佛山品牌/展厅假数据）+ 副标，右侧“立刻进入”。
+       按图片文件名映射；桌面端该条由 CSS display:none 不占位，仅触屏参与交互。 */
+    const TOUCH_TITLES = {
+      "scene-01.jpg":    ["岭南天地 · 城市会客厅", "禅城 · 高斯泼溅实景展厅"],
+      "service-01.webp": ["石湾陶都 · 匠心展廊", "石湾 · 高斯泼溅实景展厅"],
+      "scene-02.jpg":    ["西樵山麓 · 林境大宅", "南海 · 高斯泼溅实景展厅"],
+      "service-02.webp": ["季华园畔 · 阅光书房", "禅城 · 高斯泼溅实景展厅"],
+      "scene-03.jpg":    ["东华里 · 暖木公寓", "禅城 · 高斯泼溅实景展厅"],
+      "service-03.jpg":  ["佛山新城 · 云顶餐厅", "顺德 · 高斯泼溅实景展厅"],
+      "service-04.webp": ["南风古灶 · 藏品陈列馆", "石湾 · 高斯泼溅实景展厅"],
+    };
+
+    const wallRoot = createRoot(document.getElementById("feedWall"));
+    const renderWall = function () {
+      const single = portraitSingleCol.matches;
+      const layoutPhotos = single
+        ? photos.map(function (p) { return { ...p, width: 4, height: 3 }; })   // 4:3 元数据 → 格子全为 4:3，图片 cover 裁入
+        : photos;
+      wallRoot.render(
+        React.createElement(ColumnsPhotoAlbum, {
+          photos: layoutPhotos,
+          // 列数随容器宽度步进，组件自行撑满容器并平衡各列高度；单列模式固定 1 列
+          columns: (w) => (single ? 1 : w < 560 ? 2 : w < 1100 ? 3 : w < 1650 ? 4 : w < 2100 ? 5 : 6),
+          // 单列模式：spacing 只体现为列内 row-gap → 用作卡片上下间距，加大到 16px 更透气
+          spacing: (w) => (single ? 16 : w < 600 ? 3 : 6),
+          padding: 0,
+          render: {
+            image: (props, { photo }) =>
+              React.createElement("img", {
+                ...props,
+                style: {
+                  ...props.style,
+                  objectFit: "cover",
+                  objectPosition: photo.pos || "50% 50%",
+                },
+              }),
+            // extras：渲染在图片之后的额外语素（文档流内）→ 触屏端点击卡片时该条高度 0→58px 展开，
+            // 卡片容器高度由内容撑开，下方卡片被顺畅推挤（高度动画）
+            extras: (_, { photo }) => {
+              const t = TOUCH_TITLES[(photo.src || "").split("/").pop()] || ["佛山 · 高斯泼溅展厅", "高斯泼溅实景展厅"];
+              return React.createElement(
+                "div",
+                { className: "card-info" },
+                React.createElement(
+                  "div",
+                  { className: "card-info-text" },
+                  React.createElement("strong", { className: "card-info-title" }, t[0]),
+                  React.createElement("span", { className: "card-info-sub" }, t[1])
+                ),
+                React.createElement("span", { className: "card-info-cta", "data-i18n": "card.cta" }, "立刻进入")
+              );
+            },
+          },
+        })
+      );
+    };
+    portraitSingleCol.addEventListener("change", renderWall);
+    renderWall();
+    // 照片墙由 React 挂载，晚于 i18n 的首次整页 apply：挂载后补套一次当前语言，
+    // 否则信息条 CTA（data-i18n="card.cta"）会停留在简中原文直到下次切语言
+    if (window.TinttexI18N) window.TinttexI18N.apply(document.documentElement.lang);
+  </script>
+</body>
+</html>

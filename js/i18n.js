@@ -44,6 +44,10 @@
       "fh.title": "每张图，都是能走进的展厅",
       "fh.sub": "精选场景 1:1 还原真实空间，点开任意一张，即可沉浸漫游。",
 
+      /* 探索页（explore.html）标语 */
+      "exp.title": "探索全部场景",
+      "exp.sub": "更多 1:1 还原的真实展厅，点开任意一张即可沉浸漫游。",
+
       "foot.app": "Get the app",
       "foot.quick": "Quick links",
       "foot.explore": "Explore",
@@ -132,6 +136,10 @@
       /* 瀑布流章节标语（state 3 落位点） */
       "fh.title": "每張圖，都是能走進的展廳",
       "fh.sub": "精選場景 1:1 還原真實空間，點開任意一張，即可沉浸漫遊。",
+
+      /* 探索页（explore.html）标语 */
+      "exp.title": "探索全部場景",
+      "exp.sub": "更多 1:1 還原的真實展廳，點開任意一張即可沉浸漫遊。",
 
       /* 页脚链接区 */
       "foot.app": "取得應用程式",
@@ -226,6 +234,10 @@
       /* 瀑布流セクション見出し（state 3 着地点） */
       "fh.title": "どの一枚も、歩いて入れるショールーム",
       "fh.sub": "厳選シーンを1:1で再現。クリックするだけで、その空間を散策できます。",
+
+      /* 探索ページ（explore.html）見出し */
+      "exp.title": "すべてのシーンを見る",
+      "exp.sub": "1:1で再現されたリアルなショールームをもっと。クリックするだけで、その空間を散策できます。",
 
       /* 页脚链接区 */
       "foot.app": "アプリを入手",
@@ -322,6 +334,10 @@
       /* Feed section headline (state 3 anchor) */
       "fh.title": "Every image is a showroom you can walk into",
       "fh.sub": "Curated scenes rebuilt 1:1 in true-to-life 3D — click any of them to step inside.",
+
+      /* Explore page (explore.html) headline */
+      "exp.title": "Explore all scenes",
+      "exp.sub": "More true-to-life showrooms recreated 1:1 — click any image to step inside.",
 
       /* Footer nav */
       "foot.app": "Get the app",

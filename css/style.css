@@ -1011,6 +1011,15 @@ html[lang="ja"] .hero-title {
 .feed-item img.crop-t { object-position: 50% 0%; }
 .feed-item img.crop-b { object-position: 50% 100%; }
 
+/* ======== 探索更多入口（照片墙尾 → 探索页导流） ======== */
+/* 按钮复用 showcase「了解更多」样式族（pill-btn + sc-btn 白底黑字主钮），文案走 cta.more（四语字典已有）；
+   上 padding 衔接照片墙，下 padding 刻意大于上：页脚巨型字标前留足呼吸 */
+.feed-more {
+  display: flex;
+  justify-content: center;
+  padding: clamp(24px, 3.5vw, 44px) var(--pad) clamp(60px, 8.5vw, 120px);
+}
+
 /* ======== 进场动画 ======== */
 .reveal {
   opacity: 0;
@@ -1300,7 +1309,19 @@ html.is-touch .link-more:hover .circle-btn { transform: none; }
 html.is-touch .pill-btn:hover { background: none; color: #fff; border-color: rgba(255, 255, 255, 0.65); }
 html.is-touch .pill-btn:hover svg { transform: none; }
 html.is-touch .pill-btn.nav-auth--primary:hover { background: #fff; border-color: #fff; color: #0a0a0a; }
+/* 「了解更多 / 探索更多」白底主钮：触屏点按后残留 hover 复位回白底黑字基础态（与导航主钮同处理） */
+html.is-touch .pill-btn.sc-btn:hover { background: #fff; border-color: #fff; color: #0a0a0a; }
 html.is-touch .pill-btn.lang-opt:hover { background: none; color: #0a0a0a; border-color: transparent; }
 html.is-touch .pill-btn.lang-opt[aria-checked="true"]:hover { background: #0a0a0a; color: #fff; }
 /* 页脚链接 */
 html.is-touch .footer-col a:hover { color: var(--text-dim); }
+
+/* ======== 探索页（explore.html） ======== */
+/* 排版全量复用主页 .feed-head 标语 / .feed 墙壳 / .feed-wall 卡片规则（含 PC hover 与触屏点击展开的分离门控），
+   仅三处与主页的差异由 body.page-explore 修正：
+   1) 无 hero 滚动驱动，fixed 导航底衬常亮实色黑，保证字标在照片墙上的可读性；
+   2) 标语上 padding 需让开 fixed 导航占的 68px（主页标语在页面中段无此问题）；
+   3) 墙尾无页脚，.feed 底 padding 承担页面收尾留白。 */
+body.page-explore .nav::before { opacity: 1; }
+.page-explore .feed-head { padding-top: calc(68px + clamp(28px, 4.5vw, 72px)); }
+.page-explore .feed { padding-bottom: clamp(48px, 7vw, 104px); }
