@@ -1632,6 +1632,18 @@ body.agent-open .agent-inner {
   height: 100%;
   overflow: visible;   /* 花瓣呼吸时允许略微探出 viewBox，不被裁边 */
 }
+/* 整朵花缓慢顺时针自转：六瓣是全等圆，纯几何旋转看不出转，
+   读作“转”的是 userSpaceOnUse 渐变随组每圈绕行一次（色相绕着花心流）；
+   transform-box 取 view-box → 原点钉死 viewBox 中心 (32,32)，不受每瓣呼吸的 bbox 抖动影响；
+   眼组在此组之外 → 脸始终正立，不跟着转 */
+.am-spin {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: am-spin 24s linear infinite;
+}
+@keyframes am-spin {
+  to { transform: rotate(360deg); }
+}
 /* 花瓣：每瓣按 JS 注入的 --am-dur/--am-delay/--am-amp/--am-dx/--am-dy 各自错拍呼吸
    → 同一套 keyframes 读出不同变量，整朵 shape 不规则地扩散一点、收缩一点 */
 .am-petal {
@@ -1733,8 +1745,8 @@ body.agent-open .agent-inner {
   .scene-loading, .scene-stage, .scene-back, .scene-ai { transition: none; }
   .agent-panel, .agent-inner, .scene-ai { transition: none; }
   .agent-inner { transform: none; }
-  /* mark 组件：辉光与花瓣呼吸停摆、眼部过渡关掉（JS 侧也不起调度器）→ 静态花 */
-  .agent-mark::before, .am-petal { animation: none; }
+  /* mark 组件：辉光、自转与花瓣呼吸停摆、眼部过渡关掉（JS 侧也不起调度器）→ 静态花 */
+  .agent-mark::before, .am-petal, .am-spin { animation: none; }
   .am-eyes, .am-eye { transition: none; }
   .scene-loading-icon { display: none; }
 }

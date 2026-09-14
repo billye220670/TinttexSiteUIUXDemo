@@ -1,8 +1,9 @@
 /* Tinttex — AI agent mark 组件（agent-mark.js）
-   自包含组件：向任意 [data-agent-mark] 宿主注入花形 SVG，并驱动三层动效——
+   自包含组件：向任意 [data-agent-mark] 宿主注入花形 SVG，并驱动四层动效——
      1) 辉光：宿主 ::before 光晕呼吸（纯 CSS，见 style.css 的 .agent-mark 区块）；
-     2)  blob：每瓣圆按 JS 注入的各自周期/振幅/相位做轻微 scale+translate → 整朵花不规则地扩散收缩；
-     3)  双眼：随机间隔眨眼（scaleY 模拟）+ 时不时整体左右看（眼组 translateX）。
+     2) 自转：花瓣组整体缓慢顺时针转（渐变是 userSpaceOnUse，随组绕行一圈，转才看得见）；
+     3)  blob：每瓣圆按 JS 注入的各自周期/振幅/相位做轻微 scale+translate → 整朵花不规则地扩散收缩；
+     4)  双眼：随机间隔眨眼（scaleY 模拟）+ 时不时整体左右看（眼组 translateX）。
    复用方式：放置处写 <span class="agent-mark" data-agent-mark></span> 即可，尺寸由外部 .agent-mark 的宽高控制；
    同一页多实例互不干扰（渐变 id 带随机后缀、每实例独立随机种子）。
    reduced-motion：CSS 侧停掉全部动画，JS 侧不起眼部调度器，留一朵静态花。 */
@@ -22,7 +23,7 @@
       '<stop offset="0" stop-color="#38bdf8"/><stop offset="0.35" stop-color="#8b5cf6"/>' +
       '<stop offset="0.68" stop-color="#ec4899"/><stop offset="1" stop-color="#fb923c"/>' +
       '</linearGradient></defs>' +
-      '<g fill="url(#' + uid + ')">' +
+      '<g class="am-spin" fill="url(#' + uid + ')">' +
       PETALS.map(function (p) {
         return '<circle class="am-petal" cx="' + p[0] + '" cy="' + p[1] + '" r="12"/>';
       }).join("") +
@@ -86,7 +87,7 @@
     if (!svg) return;
     // 每瓣独立周期/振幅/相位/位移：同一套 keyframes 读不同变量 → 呼吸错拍，shape 不规则扩散收缩
     svg.querySelectorAll(".am-petal").forEach(function (p) {
-      p.style.setProperty("--am-amp", rand(1.08, 1.2).toFixed(3));
+      p.style.setProperty("--am-amp", rand(0.92, 1.28).toFixed(3));   // 区间跨过 1：有的瓣缩有的瓣胀，瓣间大小差才读得出来
       p.style.setProperty("--am-dx", rand(-2, 2).toFixed(2) + "px");
       p.style.setProperty("--am-dy", rand(-2, 2).toFixed(2) + "px");
       p.style.setProperty("--am-dur", rand(2.4, 4.2).toFixed(2) + "s");
