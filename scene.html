@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <!-- 移动端禁手势/双击/捏合缩放三层：viewport meta（安卓）+ CSS touch-action:none（触屏）+ scene.js 捏合拦截（iOS 无视 user-scalable=no） -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title data-i18n="scene.pageTitle">Tinttex — 场景漫游</title>
+  <meta name="description" content="Tinttex 场景页：1:1 还原的真实展厅，进入后可自由漫游（当前为占位示例）。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230e0e0e'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='18' font-weight='700' fill='%23fff' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<!-- page-scene：场景页钩子（纯黑底 / 不滚动 / loading 层与 viewport 占位），见 style.css 末尾 -->
+<!-- 底色与来源页淡出遮罩同为 #0a0a0a：跳转瞬间不闪白，直接接上本页的“正在准备场景”黑屏 -->
+<body id="top" class="page-scene">
+
+  <!-- ======== viewport 占位（loading 层淡出后露出）========
+       撑满全屏的占位块（无圆角、无留边），示意 3D 场景的 viewport 区域；
+       接入真实场景时把 .scene-viewport 内部整块换成 canvas / splat 渲染容器，外壳与转场不动 -->
+  <main class="scene-stage" aria-label="3D 场景视口" data-i18n-aria="aria.sceneStage">
+    <div class="scene-viewport">
+      <p class="scene-viewport-tag">
+        <span data-i18n="scene.viewport">场景视口 · 占位示意</span>
+        <!-- 场景 id 由 scene.js 从 ?scene= 读出后填入（来源页点击的卡片图名）；无参数时该行为空 -->
+        <span class="scene-viewport-id" id="sceneId"></span>
+      </p>
+    </div>
+  </main>
+
+  <!-- 返回钮：悬浮在 viewport 左上角；history 里有来源页就 back（保留滚动位置），否则回主页 -->
+  <button class="scene-back" id="sceneBack" type="button" aria-label="返回上一页" data-i18n-aria="aria.back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m11 18-6-6 6-6"/></svg>
+  </button>
+
+  <!-- AI 对话入口：右下角悬浮（与返回钮对角呼应）；图标 mingcute:chat-4-ai-fill（fill=currentColor → 颜色跟 CSS color）。
+       点击后由 scene.js 加 body.agent-open：本钮的圆形即面板的起始 shape（见 .agent-panel 折叠态），
+       面板撑开同时本钮 0.1s 淡出 → 视觉上就是“按钮展开成卡片、图标消失” -->
+  <button class="scene-ai" id="sceneAi" type="button" aria-label="AI 客服对话" data-i18n-aria="aria.aiChat">
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M0 0h24v24H0z" fill="none" />
+      <path fill="currentColor" d="M14.767 3a2.996 2.996 0 0 0 1.263 4.839l.378.129a1 1 0 0 1 .624.624l.13.378A2.995 2.995 0 0 0 22 10.233V16a5 5 0 0 1-5.001 5H3a1 1 0 0 1-1-1V8a5 5 0 0 1 5-5zM9 10a1 1 0 0 0-1 1v2a1 1 0 1 0 2 0v-2a1 1 0 0 0-1-1m6 0a1 1 0 0 0-1 1v2a1 1 0 1 0 2 0v-2a1 1 0 0 0-1-1m5-9a1 1 0 0 1 .946.677l.13.378c.3.879.99 1.57 1.87 1.87l.377.129a1 1 0 0 1 0 1.892l-.378.13c-.879.3-1.57.99-1.87 1.87l-.129.377a1 1 0 0 1-1.892 0l-.13-.378a3 3 0 0 0-1.87-1.87l-.377-.129a1 1 0 0 1 0-1.892l.378-.13c.879-.3 1.57-.99 1.87-1.87l.129-.377A1 1 0 0 1 20 1" />
+    </svg>
+  </button>
+
+  <!-- ======== AI agent 面板：由右下入口钮展开的右侧固定宽浮动卡片 ========
+       折叠态与 .scene-ai 同位同尺寸同底色（52px 圆）→ body.agent-open 时 width/height/border-radius
+       补间到右侧竖卡，眼睛读作“按钮自己撑开”；内容 .agent-inner 延后淡入，收起时先淡出。
+       版式参考 agent 面板通用布局：顶部彩色 mark + 标题 + 三条推荐项 + 底部输入框（仅保留发送钮）；
+       推荐项点击 = 填入输入框并聚焦（入口级交互），发送钮暂为空入口，等 AI 客服接线。 -->
+  <aside class="agent-panel" id="agentPanel" role="dialog" aria-labelledby="agentTitle">
+    <div class="agent-inner">
+      <!-- 收起钮：浮动卡片没有遮罩可点，× 与 Esc 是两条退出路径（scene.js） -->
+      <button class="agent-close" id="agentClose" type="button" aria-label="关闭面板" data-i18n-aria="aria.agentClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+
+      <div class="agent-head">
+        <!-- 彩色花形 mark：组件化（js/agent-mark.js 注入 SVG 并驱动辉光/花瓣呼吸/眨眼左右看）；
+             宿主只占尺寸，复用处在任何页面写 <span class="agent-mark" data-agent-mark></span> 即可 -->
+        <span class="agent-mark" data-agent-mark></span>
+        <p class="agent-title" id="agentTitle" data-i18n="agent.title">我可以帮你做什么？</p>
+      </div>
+
+      <div class="agent-sugs">
+        <button class="agent-sug" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0Z"/><path d="M4 18v2"/><path d="M20 18v2"/><path d="M12 4v9"/></svg>
+          <span data-i18n="agent.sug1">帮我找一款新中式沙发</span>
+        </button>
+        <button class="agent-sug" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg>
+          <span data-i18n="agent.sug2">带我去北欧风格展馆</span>
+        </button>
+        <button class="agent-sug" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
+          <span data-i18n="agent.sug3">帮我在展厅找一份工作</span>
+        </button>
+      </div>
+
+      <!-- 底部输入框：占位在上、发送钮在右下（参考图版式）；红框内的附件/工具钮与底部订阅条不做 -->
+      <div class="agent-input">
+        <textarea class="agent-field" id="agentField" rows="2" placeholder="输入你的想法。" data-i18n-placeholder="agent.placeholder" aria-label="输入你的想法。" data-i18n-aria="agent.placeholder"></textarea>
+        <button class="agent-send" id="agentSend" type="button" aria-label="发送" data-i18n-aria="aria.agentSend">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9z"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======== loading 层：全黑 + “正在准备场景” + pulse-3 涟漪动效 ========
+       常驻黑屏，就绪后由 scene.js 给 <body> 加 scene-ready → 本层淡出（visibility 同步断掉可访问性树与点击）；
+       role=status + aria-live：读屏用户能听到“正在准备场景” -->
+  <div class="scene-loading" id="sceneLoading" role="status" aria-live="polite">
+    <p class="scene-loading-text" data-i18n="scene.preparing">正在准备场景</p>
+    <!-- svg-spinners: pulse-3（三圈同心圆依次扩散淡出，SMIL 驱动）；fill=currentColor → 颜色跟随 CSS color -->
+    <svg class="scene-loading-icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M0 0h24v24H0z" fill="none" />
+      <circle cx="12" cy="12" r="0" fill="currentColor">
+        <animate id="SVGHRb9bJhy" fill="freeze" attributeName="r" begin="0;SVGUoIUme6Z.begin+0.4s" calcMode="spline" dur="1.2s" keySplines=".52,.6,.25,.99" values="0;11" />
+        <animate fill="freeze" attributeName="opacity" begin="0;SVGUoIUme6Z.begin+0.4s" calcMode="spline" dur="1.2s" keySplines=".52,.6,.25,.99" values="1;0" />
+      </circle>
+      <circle cx="12" cy="12" r="0" fill="currentColor">
+        <animate id="SVGaun8abat" fill="freeze" attributeName="r" begin="SVGHRb9bJhy.begin+0.4s" calcMode="spline" dur="1.2s" keySplines=".52,.6,.25,.99" values="0;11" />
+        <animate fill="freeze" attributeName="opacity" begin="SVGHRb9bJhy.begin+0.4s" calcMode="spline" dur="1.2s" keySplines=".52,.6,.25,.99" values="1;0" />
+      </circle>
+      <circle cx="12" cy="12" r="0" fill="currentColor">
+        <animate id="SVGUoIUme6Z" fill="freeze" attributeName="r" begin="SVGHRb9bJhy.begin+0.8s" calcMode="spline" dur="1.2s" keySplines=".52,.6,.25,.99" values="0;11" />
+        <animate fill="freeze" attributeName="opacity" begin="SVGHRb9bJhy.begin+0.8s" calcMode="spline" dur="1.2s" keySplines=".52,.6,.25,.99" values="1;0" />
+      </circle>
+    </svg>
+  </div>
+
+  <!-- i18n 与主页共享同一套字典/localStorage 记忆（本页文案键：scene.* / aria.back / aria.aiChat / aria.sceneStage）；
+       main.js 不在本页加载（无导航/弹窗/滚动驱动），场景页逻辑单独放 scene.js -->
+  <script src="js/i18n.js" defer></script>
+  <script src="js/agent-mark.js" defer></script>
+  <script src="js/scene.js" defer></script>
+</body>
+</html>

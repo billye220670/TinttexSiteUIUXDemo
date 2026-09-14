@@ -10,6 +10,8 @@
     "zh-CN": {
       "nav.login": "登录",
       "nav.signup": "注册",
+      /* 触屏信息条 CTA（data-i18n）：字典必须写全，否则繁中/英/日切回简中时会停在译文（桌面端伪元素 CTA 走 CSS --card-cta，不受影响） */
+      "card.cta": "立刻进入",
       "hero.title": "逛一逛，摆一摆。",
       "hero.sub": "佛山展厅一比一还原，沉浸逛展，线上搭配，AI客服全程陪跑。",
       "cta.more": "探索更多",
@@ -47,6 +49,22 @@
       /* 探索页（explore.html）标语 */
       "exp.title": "探索全部场景",
       "exp.sub": "更多 1:1 还原的真实展厅，点开任意一张即可沉浸漫游。",
+
+      /* 场景页（scene.html）：路由转场后的具体场景示例页 */
+      "scene.pageTitle": "Tinttex — 场景漫游",
+      "scene.preparing": "正在准备场景",
+      "scene.viewport": "场景视口 · 占位示意",
+      "aria.sceneStage": "3D 场景视口",
+      "aria.back": "返回上一页",
+      "aria.aiChat": "AI 客服对话",
+      /* AI agent 面板（scene.html 右下入口钮展开的浮动卡片） */
+      "agent.title": "我可以帮你做什么？",
+      "agent.sug1": "帮我找一款新中式沙发",
+      "agent.sug2": "带我去北欧风格展馆",
+      "agent.sug3": "帮我在展厅找一份工作",
+      "agent.placeholder": "输入你的想法。",
+      "aria.agentClose": "关闭面板",
+      "aria.agentSend": "发送",
 
       "foot.app": "Get the app",
       "foot.quick": "Quick links",
@@ -140,6 +158,22 @@
       /* 探索页（explore.html）标语 */
       "exp.title": "探索全部場景",
       "exp.sub": "更多 1:1 還原的真實展廳，點開任意一張即可沉浸漫遊。",
+
+      /* 場景頁（scene.html）：路由轉場後的具體場景示例頁 */
+      "scene.pageTitle": "Tinttex — 場景漫遊",
+      "scene.preparing": "正在準備場景",
+      "scene.viewport": "場景視口 · 佔位示意",
+      "aria.sceneStage": "3D 場景視口",
+      "aria.back": "返回上一頁",
+      "aria.aiChat": "AI 客服對話",
+      /* AI agent 面板（scene.html 右下入口鈕展開的浮動卡片） */
+      "agent.title": "我可以幫你做什麼？",
+      "agent.sug1": "幫我找一款新中式沙發",
+      "agent.sug2": "帶我去北歐風格展館",
+      "agent.sug3": "幫我在展廳找一份工作",
+      "agent.placeholder": "輸入你的想法。",
+      "aria.agentClose": "關閉面板",
+      "aria.agentSend": "傳送",
 
       /* 页脚链接区 */
       "foot.app": "取得應用程式",
@@ -238,6 +272,22 @@
       /* 探索ページ（explore.html）見出し */
       "exp.title": "すべてのシーンを見る",
       "exp.sub": "1:1で再現されたリアルなショールームをもっと。クリックするだけで、その空間を散策できます。",
+
+      /* シーンページ（scene.html）：ルート遷移後のサンプルシーンページ */
+      "scene.pageTitle": "Tinttex — シーン散策",
+      "scene.preparing": "シーンを準備しています",
+      "scene.viewport": "シーンビューポート · プレースホルダー",
+      "aria.sceneStage": "3D シーンビューポート",
+      "aria.back": "前のページに戻る",
+      "aria.aiChat": "AI スタッフとチャット",
+      /* AI agent パネル（scene.html 右下のエントリーボタンから展開するフローティングカード） */
+      "agent.title": "何をお手伝いしましょうか？",
+      "agent.sug1": "新中華スタイルのソファを探して",
+      "agent.sug2": "北欧スタイルの展示館へ案内して",
+      "agent.sug3": "ショールームで仕事を探して",
+      "agent.placeholder": "考えを入力してください。",
+      "aria.agentClose": "パネルを閉じる",
+      "aria.agentSend": "送信",
 
       /* 页脚链接区 */
       "foot.app": "アプリを入手",
@@ -338,6 +388,22 @@
       /* Explore page (explore.html) headline */
       "exp.title": "Explore all scenes",
       "exp.sub": "More true-to-life showrooms recreated 1:1 — click any image to step inside.",
+
+      /* Scene page (scene.html): the concrete scene route reached after the page fade-out */
+      "scene.pageTitle": "Tinttex — Scene walkthrough",
+      "scene.preparing": "Preparing scene",
+      "scene.viewport": "Scene viewport · placeholder",
+      "aria.sceneStage": "3D scene viewport",
+      "aria.back": "Back to previous page",
+      "aria.aiChat": "Chat with AI assistant",
+      /* AI agent panel (floating card expanded from the bottom-right entry button on scene.html) */
+      "agent.title": "What can I help you with?",
+      "agent.sug1": "Find me a new-Chinese-style sofa",
+      "agent.sug2": "Take me to the Nordic-style showroom",
+      "agent.sug3": "Help me find a job at the showroom",
+      "agent.placeholder": "Type your idea.",
+      "aria.agentClose": "Close panel",
+      "aria.agentSend": "Send",
 
       /* Footer nav */
       "foot.app": "Get the app",

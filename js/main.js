@@ -593,6 +593,112 @@
     }
   }
 
+  /* ======== 路由转场：点开瀑布流卡片 → 整页淡出 → 场景页（scene.html）========
+   * 「进入场景」入口两端一致，但触发点按各自既有交互分工：
+   *   · 桌面（hover+fine）：点卡片任意处即进入（hover 浮层「立刻进入」是伪元素，点击目标仍是卡片本身）；
+   *   · 触屏：点卡片仍是展开/收起信息条（见上方 is-touch 区块），点信息条里的「立刻进入」才进入场景。
+   * 遮罩是动态创建的 .route-veil（纯黑，与场景页底色同色 → 跳转瞬间不闪白，直接接上“正在准备场景”黑屏）；
+   * 淡出由 rAF 逐帧写 opacity（不依赖 CSS transition 是否生效 / transitionend 是否触发）：
+   * 本站整页本来就偏黑，时长太短 + 起步就快的缓动会让淡出“看不出来就跳了”，所以用
+   * FADE_DUR(520ms) + easeInOutSine（两头慢，中段才推黑）+ FADE_HOLD(140ms) 全黑停留后才跳转；
+   * 淡出期间锁滚动 + 吞掉重复点击；reduced-motion 跳过淡出直接跳转；
+   * bfcache 返回（pageshow.persisted）时把遮罩淡回透明，否则整页会停在全黑。 */
+  var SCENE_HREF = "scene.html";
+  var FADE_DUR = 520;      // ms：整页淡出时长
+  var FADE_HOLD = 140;     // ms：全黑停留，让黑帧落地再跳转 → 与场景页黑屏无缝
+  var prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var routeVeil = null;
+  var routeHref = null;
+  var veilRaf = null;
+  var leaving = false;    // 转场中：连点两张卡片只跳一次
+  var navFired = false;   // 跳转已执行：让尚未到点的兜底定时器失效（bfcache 恢复后定时器会继续跑）
+
+  // 两头慢中段快的正弦缓动：比本站默认的 --ease（强 ease-out，起步就把黑幕推上来）更能看清“淡出”过程
+  var easeInOutSine = function (t) { return -(Math.cos(Math.PI * t) - 1) / 2; };
+
+  // 卡片 → 场景 id：取图名去扩展名（scene-01 / service-02…），带在 ?scene= 上给场景页取用
+  var sceneHrefOf = function (card) {
+    var img = card && card.querySelector ? card.querySelector("img") : null;
+    var name = img ? String(img.getAttribute("src") || "").split("/").pop() : "";
+    var id = name.replace(/\.(jpe?g|png|webp|avif|gif)$/i, "");
+    return SCENE_HREF + (id ? "?scene=" + encodeURIComponent(id) : "");
+  };
+
+  var gotoRoute = function () {
+    if (navFired || !routeHref) return;
+    navFired = true;
+    location.assign(routeHref);
+  };
+
+  // 遮罩只创建一次（常驻 body 末尾，opacity 由下面的补间逐帧写 inline style）
+  var ensureVeil = function () {
+    if (routeVeil) return routeVeil;
+    routeVeil = document.createElement("div");
+    routeVeil.className = "route-veil";
+    routeVeil.setAttribute("aria-hidden", "true");
+    document.body.appendChild(routeVeil);
+    return routeVeil;
+  };
+
+  // 遮罩透明度补间：淡出用于转场，淡入用于 bfcache 返回时把页面“显影”回来
+  var tweenVeil = function (from, to, dur, done) {
+    if (veilRaf != null) { cancelAnimationFrame(veilRaf); veilRaf = null; }
+    var veil = ensureVeil();
+    var t0 = performance.now();
+    var step = function (now) {
+      var t = dur <= 0 ? 1 : Math.min(1, (now - t0) / dur);
+      veil.style.opacity = (from + (to - from) * easeInOutSine(t)).toFixed(3);
+      if (t < 1) { veilRaf = requestAnimationFrame(step); return; }
+      veilRaf = null;
+      if (done) done();
+    };
+    veilRaf = requestAnimationFrame(step);
+  };
+
+  var openScene = function (card) {
+    if (leaving) return;
+    leaving = true;
+    routeHref = sceneHrefOf(card);
+    navFired = false;
+    if (prefersReducedMotion) { gotoRoute(); return; }
+    var veil = ensureVeil();
+    document.body.classList.add("route-leaving");   // 锁滚动：淡出期间页面不再跟滚轮/惯性动
+    // 兜底：rAF 被挂起（切后台/低电量节流）时也要能跳走
+    setTimeout(gotoRoute, FADE_DUR + FADE_HOLD + 800);
+    tweenVeil(0, 1, FADE_DUR, function () {
+      veil.style.pointerEvents = "auto";   // 全黑后接管点击，跳转前不再误触底下内容
+      setTimeout(gotoRoute, FADE_HOLD);
+    });
+  };
+
+  // bfcache 恢复：把遮罩淡回透明并解掉滚动锁，同时作废仍在排队的兜底定时器（否则一回到页面就又被跳走）
+  window.addEventListener("pageshow", function (e) {
+    if (!e.persisted) return;
+    leaving = false;
+    navFired = true;
+    document.body.classList.remove("route-leaving");
+    if (!routeVeil) return;
+    var from = parseFloat(routeVeil.style.opacity || "0") || 0;
+    routeVeil.style.pointerEvents = "";
+    if (prefersReducedMotion || from <= 0.01) { routeVeil.style.opacity = "0"; return; }
+    tweenVeil(from, 0, 320);
+  });
+
+  if (feedWall) {
+    feedWall.addEventListener("click", function (e) {
+      var find = e.target.closest ? e.target.closest.bind(e.target) : null;
+      if (!find) return;
+      // 信息条里的「立刻进入」：两端都直接进场景（上方 is-touch 区块对 .card-info 内的点击已提前 return，不会同时触发展开）
+      var cta = find(".card-info-cta");
+      if (cta) { openScene(cta.closest(".react-photo-album--photo")); return; }
+      // 触屏点卡片本体 = 展开信息条，不直接进场景
+      if (isTouchDevice || find(".card-info")) return;
+      // .feed-item = CDN 不可用时的静态兜底格子，一并支持
+      var card = find(".react-photo-album--photo, .feed-item");
+      if (card) openScene(card);
+    });
+  }
+
   /* ======== Showreel 播放 / 暂停 ======== */
   var reelVideo = document.getElementById("reelVideo");
   var reelToggle = document.getElementById("reelToggle");

@@ -920,6 +920,8 @@ html[lang="ja"] .hero-title {
 }
 /* hover 交互只在具备 hover 能力的设备（桌面）启用；触屏设备改用点击展开信息条（见下方 is-touch 区块） */
 @media (hover: hover) and (pointer: fine) {
+  /* 桌面端点卡片即进场景页（main.js 路由转场）→ 手指光标提示可点，含 hover 浮层「立刻进入」 */
+  .feed-wall .react-photo-album--photo { cursor: pointer; }
   .feed-wall .react-photo-album--photo:hover::before { opacity: 1; }
   .feed-wall .react-photo-album--photo:hover::after {
     opacity: 1;
@@ -982,7 +984,11 @@ html[lang="ja"] .hero-title {
   letter-spacing: 0.24em;
   line-height: 1.4;
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;   /* 点按即触发路由转场，去掉系统灰块高亮 */
+  transition: background 0.22s var(--ease), color 0.22s var(--ease);
 }
+/* 点按反馈：按下即反色（随后整页淡出进场景页），触屏上没有 hover 态，用 :active 补足“点到了”的确认感 */
+html.is-touch .card-info-cta:active { background: #fff; color: #0a0a0a; }
 
 /* CDN 不可用时的静态兜底网格（React 挂载后会被整体替换） */
 .feed-grid {
@@ -1325,3 +1331,410 @@ html.is-touch .footer-col a:hover { color: var(--text-dim); }
 body.page-explore .nav::before { opacity: 1; }
 .page-explore .feed-head { padding-top: calc(68px + clamp(28px, 4.5vw, 72px)); }
 .page-explore .feed { padding-bottom: clamp(48px, 7vw, 104px); }
+
+/* ======== 路由转场遮罩（瀑布流卡片 → scene.html）======== */
+/* 由 main.js 动态创建并挂到 body 末尾，opacity 由 JS 逐帧补间（不用 transition：避开“过渡未生效→transitionend 不触发”的不确定性）；
+   整页淡出到纯黑后再跳转，与场景页同色（#0a0a0a）→ 跳转瞬间不闪白，直接接上“正在准备场景”黑屏。
+   z-index：高于导航(60)/语言面板(70)/弹窗(200)，低于 ?debug=1 的诊断浮层(99999) */
+.route-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: #0a0a0a;
+  opacity: 0;
+  pointer-events: none;   /* 不拦点击（常驻在 DOM 里，只在淡出跑完后由 JS 打开） */
+  will-change: opacity;
+}
+body.route-leaving { overflow: hidden; }   /* 淡出期间锁滚动：遮罩下的页面不再跟着滚轮/惯性动 */
+
+/* ======== 场景页（scene.html）======== */
+/* 示例路由页：进场先全黑 loading（“正在准备场景”+ pulse-3 涟漪），
+   就绪后 loading 层淡出，露出撑满全屏的 viewport 占位。
+   接入真实 3D 场景时：.scene-viewport 内部整块换成 canvas / splat 容器，外壳与转场不动。 */
+body.page-scene {
+  background: #0a0a0a;
+  overflow: hidden;   /* 占位即一屏，页面本身不滚动 */
+}
+/* 触屏下把场景页 touch-action 收到 none：禁捏合/双击/拖 pan（iOS Safari 无视 viewport 的 user-scalable=no，meta 拦不住捏合）。
+   本页是 app 式不滚动页，无副作用；面板 .agent-inner 的单指滚动不受影响——
+   touch-action 判定链只从触点走到最近滚动容器，不经过 body */
+html.is-touch body.page-scene { touch-action: none; }
+
+/* —— loading 层：文字在上、涟漪图标在下（用户指定版式）—— */
+.scene-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 4vw, 22px);
+  background: #0a0a0a;
+  transition: opacity 0.6s var(--ease), visibility 0.6s;
+}
+/* 就绪：淡出 + visibility 断掉点击与可访问性树（role=status 不再被读屏重复播报） */
+body.scene-ready .scene-loading { opacity: 0; visibility: hidden; }
+.scene-loading-text {
+  font-size: clamp(13px, 3.4vw, 15px);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;   /* letter-spacing 会在末字后也留一格，缩进抵消 → 整行视觉居中 */
+  color: rgba(255, 255, 255, 0.78);
+}
+/* pulse-3（svg-spinners）：三圈同心圆依次扩散淡出；SVG 用 fill=currentColor → 颜色只改这里的 color */
+.scene-loading-icon {
+  width: clamp(32px, 9vw, 42px);
+  height: clamp(32px, 9vw, 42px);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* —— viewport 占位：全屏（无圆角/无留边，直接铺满视口）—— */
+.scene-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+body.scene-ready .scene-stage { opacity: 1; }
+.scene-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* 顶部一线高光 + 暗灰渐变底：示意“有内容但尚未加载”的空 viewport，比纯色块更有空间感 */
+  background:
+    radial-gradient(120% 85% at 50% 0%, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0) 58%),
+    linear-gradient(168deg, #1c1c1f 0%, #131315 55%, #0e0e10 100%);
+}
+/* 占位标签：居中弱化的说明文字（+ 来源卡片带过来的场景 id） */
+.scene-viewport-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  text-align: center;
+  font-size: clamp(11px, 2.6vw, 13px);
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;
+  color: rgba(255, 255, 255, 0.3);
+}
+.scene-viewport-id {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-indent: 0;
+  color: rgba(255, 255, 255, 0.2);
+}
+.scene-viewport-id:empty { display: none; }   /* 直接打开本页（无 ?scene=）时不占行 */
+
+/* —— 返回钮：悬浮在 viewport 左上角 —— */
+/* 不复用 .circle-btn：那里的 hover 右移是“更多/前进”箭头语义，返回改左移；
+   就绪前 opacity/visibility/pointer-events 全关 → loading 期间既看不见也点不到 */
+.scene-back {
+  position: fixed;
+  top: clamp(16px, 2.4vw, 24px);
+  left: clamp(16px, 2.4vw, 28px);
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.82);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.5s var(--ease), visibility 0.5s, background 0.35s var(--ease), color 0.35s var(--ease), border-color 0.35s var(--ease), transform 0.35s var(--ease);
+}
+body.scene-ready .scene-back { opacity: 1; visibility: visible; pointer-events: auto; }
+.scene-back svg { width: 19px; height: 19px; }
+.scene-back:hover { background: #fff; color: #0a0a0a; border-color: #fff; transform: translateX(-3px); }
+html.is-touch .scene-back:hover { background: none; color: rgba(255, 255, 255, 0.82); border-color: rgba(255, 255, 255, 0.4); transform: none; }
+html.is-touch .scene-back:active { background: #fff; color: #0a0a0a; border-color: #fff; }
+
+/* —— AI 对话入口：右下角悬浮圆钮（与左上角返回钮对角呼应）—— */
+/* 图标 mingcute:chat-4-ai-fill 用 fill=currentColor → 颜色只改这里的 color；
+   目前只是入口（data-action=open-ai-chat 无 handler，等 AI 客服接线，约定同 index.html 的 data-action 族）；
+   就绪后比 viewport 晚 0.18s 浮入（位移用独立属性 translate，hover 的 transform 不会被这个延时拖慢） */
+.scene-ai {
+  position: fixed;
+  right: calc(clamp(16px, 2.4vw, 28px) + env(safe-area-inset-right, 0px));
+  bottom: calc(clamp(16px, 2.4vw, 28px) + env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(20, 20, 22, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  translate: 0 10px;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    opacity 0.45s var(--ease) 0.18s,
+    translate 0.45s var(--ease) 0.18s,
+    visibility 0s linear 0.18s,
+    background 0.3s var(--ease),
+    color 0.3s var(--ease),
+    border-color 0.3s var(--ease);
+}
+body.scene-ready .scene-ai { opacity: 1; visibility: visible; pointer-events: auto; translate: 0 0; }
+.scene-ai svg { width: 25px; height: 25px; }
+.scene-ai:hover { background: #fff; color: #0a0a0a; border-color: #fff; }
+html.is-touch .scene-ai:hover { background: rgba(20, 20, 22, 0.72); color: #fff; border-color: rgba(255, 255, 255, 0.22); }
+html.is-touch .scene-ai:active { background: #fff; color: #0a0a0a; border-color: #fff; }
+
+/* —— AI agent 面板：右下入口钮展开成的右侧固定宽浮动卡片 —— */
+/* 折叠态 = 入口钮本身（同 right/bottom、同 52px、同底色描边投影）→ body.agent-open 时
+   width/height/border-radius 补间撑成竖卡，眼睛读作“按钮自己展开”；内容 .agent-inner 延后淡入、收起时先淡出。
+   浮动卡不铺全屏：上下留与左右同值的边，场景 viewport 与左上返回钮仍可见可点。 */
+.agent-panel {
+  position: fixed;
+  right: calc(clamp(16px, 2.4vw, 28px) + env(safe-area-inset-right, 0px));
+  bottom: calc(clamp(16px, 2.4vw, 28px) + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  background: rgba(20, 20, 22, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  overflow: hidden;
+  transition:
+    width 0.32s var(--ease),
+    height 0.32s var(--ease),
+    border-radius 0.32s var(--ease),
+    opacity 0.18s var(--ease),
+    visibility 0s linear 0.32s;
+}
+body.agent-open .agent-panel {
+  /* 固定宽 400（窄屏退化为全宽减两边边距）；高 = 视口减上下边距 → 右侧撑满的竖卡 */
+  width: min(400px, calc(100vw - 2 * (clamp(16px, 2.4vw, 28px) + env(safe-area-inset-right, 0px))));
+  height: calc(100vh - 2 * (clamp(16px, 2.4vw, 28px) + env(safe-area-inset-bottom, 0px)));   /* 老浏览器回退 */
+  height: calc(100dvh - 2 * (clamp(16px, 2.4vw, 28px) + env(safe-area-inset-bottom, 0px)));
+  border-radius: 22px;
+  background: rgba(22, 22, 25, 0.9);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    width 0.32s var(--ease),
+    height 0.32s var(--ease),
+    border-radius 0.32s var(--ease),
+    opacity 0.14s var(--ease),
+    visibility 0s;
+}
+/* 展开期间入口钮连图标 0.1s 淡出（用户指定“图标消失”）；圆形 shape 已由面板折叠态接棒，不穿帮 */
+body.agent-open .scene-ai {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.1s linear, translate 0.1s linear, visibility 0s linear 0.1s;
+}
+/* 面板内容：撑开动作跑过半才显影（避免圆形态阶段透字），收起时先于 shape 消失 */
+.agent-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: clamp(18px, 2.6vh, 26px) 16px 14px;
+  opacity: 0;
+  transform: translateY(8px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;   /* 浮动卡片保持净面：滚动能力在、滚动条不露 */
+  transition: opacity 0.14s var(--ease), transform 0.14s var(--ease);
+}
+.agent-inner::-webkit-scrollbar { width: 0; }
+body.agent-open .agent-inner {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s var(--ease) 0.14s, transform 0.3s var(--ease) 0.14s;
+}
+/* 收起钮：右上角幽灵圆钮 */
+.agent-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+.agent-close:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.agent-close svg { width: 16px; height: 16px; }
+/* 头部：彩色 mark + 标题居中；上留白随视口高度伸缩（矮屏不顶满） */
+.agent-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: clamp(24px, 6vh, 62px) 0 clamp(18px, 3.2vh, 28px);
+  text-align: center;
+}
+/* mark 组件壳（SVG 由 js/agent-mark.js 注入）：宿主只定尺寸；::before 是花背后的辉光 */
+.agent-mark {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+/* 辉光：比花大一圈的径向光晕，慢速呼吸（scale + 微旋 + 明暗）→ 存在感调高一档但仍不抢主体 */
+.agent-mark::before {
+  content: "";
+  position: absolute;
+  inset: -46%;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(139, 92, 246, 0.52) 0%, rgba(56, 189, 248, 0.22) 48%, rgba(236, 72, 153, 0) 74%);
+  filter: blur(12px);
+  animation: am-glow 4.2s var(--ease) infinite alternate;
+}
+@keyframes am-glow {
+  from { transform: scale(0.86) rotate(-8deg); opacity: 0.5; }
+  to   { transform: scale(1.2) rotate(8deg);  opacity: 1; }
+}
+.agent-mark svg {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;   /* 花瓣呼吸时允许略微探出 viewBox，不被裁边 */
+}
+/* 花瓣：每瓣按 JS 注入的 --am-dur/--am-delay/--am-amp/--am-dx/--am-dy 各自错拍呼吸
+   → 同一套 keyframes 读出不同变量，整朵 shape 不规则地扩散一点、收缩一点 */
+.am-petal {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: am-blob var(--am-dur, 3.4s) ease-in-out var(--am-delay, 0s) infinite alternate;
+}
+@keyframes am-blob {
+  from { transform: scale(1) translate(0, 0); }
+  to   { transform: scale(var(--am-amp, 1.1)) translate(var(--am-dx, 0px), var(--am-dy, 0px)); }
+}
+/* 双眼：眼组整体 translateX = 左右看（慢过渡）；单眼 scaleY = 眨眼（快过渡，变量由 JS 打点） */
+.am-eyes {
+  transform: translateX(var(--am-look, 0px));
+  transition: transform 0.22s var(--ease);
+}
+.am-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scaleY(var(--am-sy, 1));
+  transition: transform 0.09s ease-in-out;
+}
+.agent-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+/* 推荐项：浅灰圆角条，线性小图标 + 左对齐文案 */
+.agent-sugs { display: flex; flex-direction: column; gap: 10px; }
+.agent-sug {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(255, 255, 255, 0.88);
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.65;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.25s var(--ease);
+}
+.agent-sug:hover { background: rgba(255, 255, 255, 0.1); }
+.agent-sug svg { flex: none; width: 18px; height: 18px; margin-top: 2px; color: rgba(255, 255, 255, 0.5); }
+/* 输入框：margin-top:auto 钉在面板底（参考图版式）；占位在上、发送钮在右下 */
+.agent-input {
+  position: relative;
+  margin-top: auto;
+  min-height: 96px;
+  padding: 12px 14px 40px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  transition: border-color 0.25s var(--ease), background 0.25s var(--ease);
+}
+.agent-input:focus-within { border-color: rgba(255, 255, 255, 0.22); background: rgba(255, 255, 255, 0.07); }
+.agent-field {
+  display: block;
+  width: 100%;
+  max-height: 132px;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+}
+.agent-field::placeholder { color: rgba(255, 255, 255, 0.32); }
+.agent-send {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.25s var(--ease), background 0.25s var(--ease);
+}
+.agent-send:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+.agent-send svg { width: 17px; height: 17px; }
+
+/* 减弱动效：转场与淡入全部改为瞬时切换；涟漪图标（SMIL 无法用 CSS 暂停）直接隐藏，文字仍说明在加载 */
+@media (prefers-reduced-motion: reduce) {
+  .scene-loading, .scene-stage, .scene-back, .scene-ai { transition: none; }
+  .agent-panel, .agent-inner, .scene-ai { transition: none; }
+  .agent-inner { transform: none; }
+  /* mark 组件：辉光与花瓣呼吸停摆、眼部过渡关掉（JS 侧也不起调度器）→ 静态花 */
+  .agent-mark::before, .am-petal { animation: none; }
+  .am-eyes, .am-eye { transition: none; }
+  .scene-loading-icon { display: none; }
+}
