@@ -20,17 +20,7 @@
   <header class="nav wrap">
     <a class="nav-logo" href="index.html" aria-label="Tinttex 主页">Tinttex<sup>®</sup></a>
     <div class="nav-actions">
-      <div class="lang-switch" id="langSwitch">
-        <button class="nav-lang circle-btn circle-btn--sm" id="langToggle" type="button" aria-label="切换语言 / Switch language" aria-haspopup="true" aria-expanded="false" title="语言 / Language">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        </button>
-        <div class="lang-menu" id="langMenu" role="menu" aria-label="选择语言">
-          <button class="pill-btn lang-opt" role="menuitemradio" type="button" data-lang="zh-CN" aria-checked="true">简体中文</button>
-          <button class="pill-btn lang-opt" role="menuitemradio" type="button" data-lang="zh-TW" aria-checked="false">繁体中文</button>
-          <button class="pill-btn lang-opt" role="menuitemradio" type="button" data-lang="en" aria-checked="false">English</button>
-          <button class="pill-btn lang-opt" role="menuitemradio" type="button" data-lang="ja" aria-checked="false">日本語</button>
-        </div>
-      </div>
+
     </div>
   </header>
 
@@ -134,7 +124,7 @@
         React.createElement(ColumnsPhotoAlbum, {
           photos: layoutPhotos,
           // 列数随容器宽度步进，组件自行撑满容器并平衡各列高度；单列模式固定 1 列
-          columns: (w) => (single ? 1 : w < 560 ? 2 : w < 1100 ? 3 : w < 1650 ? 4 : w < 2100 ? 5 : 6),
+          columns: (w) => (single ? 1 : w < 560 ? 2 : 3),
           // 单列模式：spacing 只体现为列内 row-gap → 用作卡片上下间距，加大到 16px 更透气
           spacing: (w) => (single ? 16 : w < 600 ? 3 : 6),
           padding: 0,

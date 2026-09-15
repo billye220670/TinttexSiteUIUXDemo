@@ -9,7 +9,7 @@
     /* 简中为源语言，但字典必须写全：切回 zh-CN 时才能把英文/繁中文案换回来（apply 只替换字典里存在的键） */
     "zh-CN": {
       "nav.login": "登录",
-      "nav.signup": "注册",
+      "nav.signup": "立即注册",
       /* 触屏信息条 CTA（data-i18n）：字典必须写全，否则繁中/英/日切回简中时会停在译文（桌面端伪元素 CTA 走 CSS --card-cta，不受影响） */
       "card.cta": "立刻进入",
       "hero.title": "逛一逛，摆一摆。",
@@ -119,7 +119,7 @@
     "zh-TW": {
       /* 导航 & Hero & CTA */
       "nav.login": "登入",
-      "nav.signup": "註冊",
+      "nav.signup": "立即註冊",
       "card.cta": "立即進入",
       "hero.title": "逛一逛，擺一擺。",
       "hero.sub": "佛山展廳一比一還原，沉浸逛展，線上搭配，AI客服全程陪跑。",
@@ -233,7 +233,7 @@
     "ja": {
       /* 导航 & Hero & CTA */
       "nav.login": "ログイン",
-      "nav.signup": "会員登録",
+      "nav.signup": "今すぐ登録",
       "card.cta": "今すぐ見る",
       "hero.title": "見て回る、飾ってみる。",
       "hero.sub": "佛山のショールームを1:1で再現。没入感のあるショールーム体験、オンラインコーディネート、AIスタッフが最後まで伴走します",
@@ -349,7 +349,7 @@
     "en": {
       /* Nav & Hero & CTA */
       "nav.login": "Log in",
-      "nav.signup": "Sign up",
+      "nav.signup": "Sign Up Now",
       "card.cta": "Step In",
       "hero.title": "Browse\u00A0it. Place\u00A0it.",   /* \u00A0 不换行空格：Browse it. / Place it. 各自锁一行，只在句子间断行 */
       "hero.sub": "From Foshan to your home: explore our showroom in true-to-life 3D, style it online, and shop with AI support every step of the way.",

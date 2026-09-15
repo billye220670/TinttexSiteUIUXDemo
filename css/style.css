@@ -94,6 +94,7 @@ button { font-family: inherit; background: none; border: 0; color: inherit; curs
 .pill-btn.nav-auth { height: 46px; padding: 0 20px; }
 .pill-btn.nav-auth--primary { background: #fff; color: #0a0a0a; border-color: #fff; }
 .pill-btn.nav-auth--primary:hover { background: rgba(255, 255, 255, 0.82); border-color: rgba(255, 255, 255, 0.82); color: #0a0a0a; }
+.pill-btn.nav-auth--ghost:hover { background: rgba(255, 255, 255, 0.15); color: #fff; border-color: rgba(255, 255, 255, 0.8); }
 /* 语言钮只反色，不做 .circle-btn 默认的 hover 右移（那是给“更多”箭头钮的语义）；
    .circle-btn.nav-lang:hover（0,3,0）压过 .circle-btn:hover（0,2,0，且源序在后）的 translateX */
 .circle-btn.nav-lang:hover { transform: none; }
@@ -215,6 +216,30 @@ body.modal-open { overflow: hidden; }   /* 锁页面滚动：弹窗开着时鼠�
 }
 .field input::placeholder { color: #8a8984; }
 .field input:focus { border-color: #0a0a0a; box-shadow: inset 0 0 0 1px #0a0a0a; }
+/* 验证码输入框：右侧放发送按钮 */
+.field--code { display: flex; gap: 10px; margin-top: 12px; }
+.field--code input { flex: 1; }
+.btn-send-code {
+  flex: none;
+  height: 50px;
+  padding: 0 16px;
+  border: 1px solid rgba(10, 10, 10, 0.35);
+  border-radius: 10px;
+  background: #fff;
+  color: #0a0a0a;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+.btn-send-code:hover { background: #f5f5f5; border-color: #0a0a0a; }
+.btn-send-code:disabled {
+  background: #f0f0f0;
+  color: #999;
+  border-color: rgba(10, 10, 10, 0.15);
+  cursor: not-allowed;
+}
 .field-icon {
   position: absolute;
   right: 10px; top: 50%;
@@ -294,35 +319,34 @@ html[lang="zh-CN"] .oauth-cn, html[lang="zh-TW"] .oauth-cn { display: flex; }
   cursor: pointer;
 }
 .link-inline { font-weight: 600; color: #0a0a0a; }
-.link-inline:hover, .link-plain:hover, .modal-qr strong:hover { opacity: 0.65; }
+.link-inline:hover, .link-plain:hover { opacity: 0.65; }
 .modal-meta { margin-top: 16px; font-size: 12.5px; color: #6b6a66; }
 .modal-legal { margin-top: 14px; font-size: 11.5px; line-height: 1.7; color: #8a8984; }
 
-/* 登录卡：左表单 + 右扫码栏（浅底用暖白）；窄屏隐藏扫码栏 */
-.modal-card--login { width: min(860px, 100%); display: grid; grid-template-columns: 1fr 1fr; }
-.modal-card--login .modal-form { padding-right: 32px; }
-.modal-qr {
+/* 登录卡：纯表单，无右侧视频 */
+.modal-card--login { width: min(460px, 100%); }
+
+/* 注册卡：左表单 + 右视频栏（视频撑满右半侧）；窄屏隐藏视频栏 */
+.modal-card--signup { width: min(860px, 100%); display: grid; grid-template-columns: 1fr 1fr; }
+.modal-card--signup .modal-form { padding-right: 32px; }
+.modal-video {
   grid-column: 2;
   grid-row: 1;
-  margin: 10px;   /* 内缩一圈，与 Pinterest 右栏留边一致 */
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 20px;
-  padding: 24px;
-  background: var(--text);
-  border-radius: 10px;
-  text-align: center;
+  overflow: hidden;
+  border-radius: 0 16px 16px 0;
+  background: #0a0a0a;
 }
-.modal-qr .qr-box { background: #fff; border: 1px solid rgba(10, 10, 10, 0.08); border-radius: 12px; padding: 14px; }
-.modal-qr .qr-box svg { display: block; width: 148px; height: 148px; }
-.modal-qr p { font-size: 13.5px; line-height: 1.65; color: #3a3936; max-width: 220px; }
-.modal-qr strong { color: #0a0a0a; }
+.modal-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-.modal-card--signup { width: min(460px, 100%); }
 
 @media (max-width: 860px) {
-  .modal-card--login { grid-template-columns: 1fr; }
-  .modal-qr { display: none; }
-  .modal-card--login .modal-form { padding-right: 36px; }
+  .modal-card--signup { grid-template-columns: 1fr; }
+  .modal-video { display: none; }
+  .modal-card--signup .modal-form { padding-right: 36px; }
   .modal-form { padding: 40px 24px 22px; }
 }
 
@@ -813,9 +837,9 @@ html[lang="ja"] .hero-title {
 }
 
 .footer-bar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 20px;
   padding-block: 26px 30px;
 }
@@ -1070,7 +1094,7 @@ html.is-touch .card-info-cta:active { background: #fff; color: #0a0a0a; }
 
   .cta { flex-direction: column; align-items: flex-start; }
 
-  .footer-bar { grid-template-columns: 1fr; justify-items: center; row-gap: 16px; }
+  .footer-bar { flex-direction: column; align-items: center; row-gap: 16px; }
   .footer-links { justify-self: center; }
 }
 
@@ -1301,7 +1325,6 @@ html.is-touch button.field-icon:hover { background: none; }
 html.is-touch .forgot:hover,
 html.is-touch .link-inline:hover,
 html.is-touch .link-plain:hover,
-html.is-touch .modal-qr strong:hover,
 html.is-touch .link-more:hover > span:first-child { opacity: 1; }
 html.is-touch .btn-solid:hover { background: #0a0a0a; border-color: #0a0a0a; }
 html.is-touch .btn-ghost:hover { background: #fff; }
@@ -1315,6 +1338,7 @@ html.is-touch .link-more:hover .circle-btn { transform: none; }
 html.is-touch .pill-btn:hover { background: none; color: #fff; border-color: rgba(255, 255, 255, 0.65); }
 html.is-touch .pill-btn:hover svg { transform: none; }
 html.is-touch .pill-btn.nav-auth--primary:hover { background: #fff; border-color: #fff; color: #0a0a0a; }
+html.is-touch .pill-btn.nav-auth--ghost:hover { background: none; color: #fff; border-color: rgba(255, 255, 255, 0.65); }
 /* 「了解更多 / 探索更多」白底主钮：触屏点按后残留 hover 复位回白底黑字基础态（与导航主钮同处理） */
 html.is-touch .pill-btn.sc-btn:hover { background: #fff; border-color: #fff; color: #0a0a0a; }
 html.is-touch .pill-btn.lang-opt:hover { background: none; color: #0a0a0a; border-color: transparent; }

@@ -93,6 +93,26 @@
     });
   });
 
+  /* ======== 验证码发送按钮：5s 倒计时 ======== */
+  document.querySelectorAll("[data-countdown]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (btn.disabled) return;
+      btn.disabled = true;
+      var sec = 5;
+      btn.textContent = sec + "s";
+      var timer = setInterval(function () {
+        sec--;
+        if (sec <= 0) {
+          clearInterval(timer);
+          btn.disabled = false;
+          btn.textContent = "发送验证码";
+        } else {
+          btn.textContent = sec + "s";
+        }
+      }, 1000);
+    });
+  });
+
   /* ======== Hero 视频：静止在第一帧，播放进度由滚动 scrub 驱动 ======== */
   var heroVideo = document.querySelector(".hero-video");
   if (heroVideo) {
